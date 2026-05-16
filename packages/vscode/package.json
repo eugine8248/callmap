@@ -1,0 +1,120 @@
+{
+  "name": "callmap-vscode",
+  "displayName": "callmap",
+  "description": "PR-delta callgraph viewer for code reviewers — Visualize what a pull request actually changes.",
+  "version": "0.5.0",
+  "private": true,
+  "publisher": "callmap",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/callmap/callmap"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "callgraph",
+    "pull request",
+    "code review",
+    "diff",
+    "github"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onCommand:callmap.openPR",
+    "onCommand:callmap.openCurrentRepoPR",
+    "onCommand:callmap.openFromSelection",
+    "onCommand:callmap.showRecent"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "callmap.openPR",
+        "title": "callmap: Show PR Callgraph",
+        "category": "callmap"
+      },
+      {
+        "command": "callmap.openCurrentRepoPR",
+        "title": "callmap: Show Callgraph for a PR in the Current Repo",
+        "category": "callmap"
+      },
+      {
+        "command": "callmap.openFromSelection",
+        "title": "callmap: Visualize This PR",
+        "category": "callmap",
+        "enablement": "extensionsInstalled && extensionsInstalled =~ /github.vscode-pull-request-github/"
+      },
+      {
+        "command": "callmap.showRecent",
+        "title": "callmap: Show Recent PRs",
+        "category": "callmap"
+      }
+    ],
+    "menus": {
+      "scm/resourceGroup/context": [
+        {
+          "command": "callmap.openFromSelection",
+          "when": "scmProvider == git && extensionsInstalled =~ /github.vscode-pull-request-github/",
+          "group": "callmap"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "callmap",
+      "properties": {
+        "callmap.theme": {
+          "type": "string",
+          "enum": ["auto", "dark", "light"],
+          "default": "auto",
+          "markdownDescription": "Default theme for the callmap webview. `auto` follows VS Code's color theme kind."
+        },
+        "callmap.statusBar.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a callmap entry in the VS Code status bar."
+        },
+        "callmap.recent.maxItems": {
+          "type": "number",
+          "default": 20,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum number of recent PRs to retain."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./tsconfig.json",
+    "build:webview": "vite build --config webview-vite.config.ts",
+    "build:worker": "vite build --config webview-worker-vite.config.ts",
+    "build": "npm run build:webview && npm run build:worker && npm run compile",
+    "typecheck": "tsc -p ./tsconfig.json --noEmit && tsc -p ./webview-src/tsconfig.json --noEmit",
+    "package": "vsce package --no-yarn --no-dependencies --skip-license --out callmap-0.5.0.vsix"
+  },
+  "dependencies": {
+    "@callmap/core": "0.5.0",
+    "@callmap/ui": "0.5.0",
+    "@xyflow/react": "^12.3.5",
+    "highlight.js": "^11.11.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/vscode": "^1.85.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "@vscode/vsce": "^3.2.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}

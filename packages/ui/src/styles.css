@@ -1,0 +1,324 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────────────────────────────────────────────────
+   callmap v0.2 — VS Code Dark+ / Monaco-Light inspired token system.
+
+   Components reference these via the tailwind config (bg-editor,
+   text-primary, etc.) so swapping themes only flips :root[data-theme].
+   ─────────────────────────────────────────────────────────────────── */
+
+:root,
+:root[data-theme="dark"] {
+  /* Surfaces */
+  --bg-editor: #1e1e1e;
+  --bg-sidebar: #252526;
+  --bg-activity-bar: #333333;
+  --bg-status-bar: #007acc;
+  --bg-status-bar-warn: #cc6633;
+  --bg-panel: #252526;
+  --bg-hover: #2a2d2e;
+  --bg-selected: #094771;
+  --bg-input: #3c3c3c;
+  --bg-overlay: rgba(0, 0, 0, 0.55);
+  --bg-tooltip: #252526;
+
+  /* Borders */
+  --border: #3c3c3c;
+  --border-strong: #4a4a4a;
+  --border-focus: #007acc;
+
+  /* Text */
+  --text-primary: #cccccc;
+  --text-secondary: #9d9d9d;
+  --text-disabled: #6a6a6a;
+  --text-on-status: #ffffff;
+  --text-link: #3794ff;
+
+  /* Brand / accents */
+  --accent: #007acc;
+  --accent-hover: #1a8cff;
+  --accent-soft: rgba(0, 122, 204, 0.18);
+
+  /* Diff palette (callgraph nodes + badges) */
+  --diff-added: #4ec9b0;
+  --diff-added-bg: rgba(78, 201, 176, 0.12);
+  --diff-removed: #f48771;
+  --diff-removed-bg: rgba(244, 135, 113, 0.12);
+  --diff-changed: #dcdcaa;
+  --diff-changed-bg: rgba(220, 220, 170, 0.12);
+  --diff-neutral: #858585;
+  --diff-neutral-bg: rgba(133, 133, 133, 0.10);
+
+  /* xyflow */
+  --xyflow-bg: #1e1e1e;
+  --xyflow-grid: #2a2a2a;
+  --xyflow-edge: #555555;
+  --xyflow-edge-hover: #9d9d9d;
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(121, 121, 121, 0.4);
+  --scrollbar-thumb-hover: rgba(121, 121, 121, 0.7);
+}
+
+:root[data-theme="light"] {
+  --bg-editor: #ffffff;
+  --bg-sidebar: #f3f3f3;
+  --bg-activity-bar: #2c2c2c;
+  --bg-status-bar: #007acc;
+  --bg-status-bar-warn: #cc6633;
+  --bg-panel: #f3f3f3;
+  --bg-hover: #e8e8e8;
+  --bg-selected: #cce8ff;
+  --bg-input: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.35);
+  --bg-tooltip: #f3f3f3;
+
+  --border: #e5e5e5;
+  --border-strong: #cccccc;
+  --border-focus: #007acc;
+
+  --text-primary: #333333;
+  --text-secondary: #616161;
+  --text-disabled: #a0a0a0;
+  --text-on-status: #ffffff;
+  --text-link: #0066bf;
+
+  --accent: #007acc;
+  --accent-hover: #005a9e;
+  --accent-soft: rgba(0, 122, 204, 0.12);
+
+  --diff-added: #098658;
+  --diff-added-bg: rgba(9, 134, 88, 0.10);
+  --diff-removed: #a31515;
+  --diff-removed-bg: rgba(163, 21, 21, 0.08);
+  --diff-changed: #795e26;
+  --diff-changed-bg: rgba(121, 94, 38, 0.10);
+  --diff-neutral: #6a6a6a;
+  --diff-neutral-bg: rgba(106, 106, 106, 0.08);
+
+  --xyflow-bg: #ffffff;
+  --xyflow-grid: #ebebeb;
+  --xyflow-edge: #a0a0a0;
+  --xyflow-edge-hover: #555555;
+
+  --scrollbar-thumb: rgba(100, 100, 100, 0.3);
+  --scrollbar-thumb-hover: rgba(100, 100, 100, 0.55);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  background: var(--bg-editor);
+  color: var(--text-primary);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Text selection */
+::selection {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 1px solid var(--border-focus);
+  outline-offset: -1px;
+}
+
+/* Monospace via utility class */
+.font-codicon-mono,
+.font-mono {
+  font-family: "Cascadia Mono", Consolas, Menlo, "Courier New", monospace;
+}
+
+/* Tabular numerals for stat readouts */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── xyflow theming (token-driven) ─────────────────────────────── */
+.react-flow {
+  background: var(--xyflow-bg);
+}
+
+.react-flow__edge-path {
+  stroke: var(--xyflow-edge);
+  stroke-width: 1.5;
+}
+
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--xyflow-edge-hover);
+  stroke-width: 2;
+}
+
+.react-flow__controls {
+  box-shadow: none;
+}
+.react-flow__controls button {
+  background: var(--bg-sidebar);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+.react-flow__controls button:hover {
+  background: var(--bg-hover);
+}
+.react-flow__controls button svg {
+  fill: currentColor;
+}
+
+.react-flow__minimap {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+/* ── VS Code style scrollbars ──────────────────────────────────── */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 0;
+  transition: opacity 200ms;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ── Animations ────────────────────────────────────────────────── */
+.sidebar-collapse {
+  transition: width 150ms ease-out;
+}
+
+/* Tooltip — pure CSS, 700ms hover delay (VS Code timing) */
+.ide-tooltip {
+  position: relative;
+}
+.ide-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-tooltip);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 80ms ease-out 0ms;
+  z-index: 50;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.ide-tooltip:hover::after {
+  opacity: 1;
+  transition-delay: 700ms;
+}
+
+/* Codicon-style icon sizing for inline SVGs */
+.codicon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* Resize divider between graph and source panel */
+.resize-divider {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background-color 120ms;
+}
+.resize-divider:hover,
+.resize-divider.dragging {
+  background: var(--accent);
+}
+
+/* ── highlight.js — v0.3 source-panel syntax colors ─────────────────
+   A minimal hand-rolled theme that respects the existing diff palette
+   instead of pulling a full hljs CSS file (which would add 4-6 KB just
+   for a stock theme). Token names come from the hljs default class set.
+   Token colors come from the current theme's CSS vars, with a few extra
+   syntax-specific hues defined inline below.
+   ─────────────────────────────────────────────────────────────────── */
+:root,
+:root[data-theme="dark"] {
+  --hljs-keyword: #569cd6;
+  --hljs-builtin: #4ec9b0;
+  --hljs-type: #4ec9b0;
+  --hljs-string: #ce9178;
+  --hljs-number: #b5cea8;
+  --hljs-comment: #6a9955;
+  --hljs-function: #dcdcaa;
+  --hljs-variable: #9cdcfe;
+  --hljs-attr: #9cdcfe;
+  --hljs-meta: #c586c0;
+}
+:root[data-theme="light"] {
+  --hljs-keyword: #0000ff;
+  --hljs-builtin: #267f99;
+  --hljs-type: #267f99;
+  --hljs-string: #a31515;
+  --hljs-number: #098658;
+  --hljs-comment: #008000;
+  --hljs-function: #795e26;
+  --hljs-variable: #001080;
+  --hljs-attr: #001080;
+  --hljs-meta: #af00db;
+}
+
+.hljs { color: var(--text-primary); background: transparent; }
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal { color: var(--hljs-keyword); }
+.hljs-built_in,
+.hljs-builtin-name { color: var(--hljs-builtin); }
+.hljs-type,
+.hljs-class .hljs-title,
+.hljs-title.class_ { color: var(--hljs-type); }
+.hljs-string,
+.hljs-regexp,
+.hljs-template-string { color: var(--hljs-string); }
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet { color: var(--hljs-number); }
+.hljs-comment,
+.hljs-quote { color: var(--hljs-comment); font-style: italic; }
+.hljs-function,
+.hljs-title.function_,
+.hljs-title { color: var(--hljs-function); }
+.hljs-variable,
+.hljs-attr,
+.hljs-attribute,
+.hljs-property { color: var(--hljs-variable); }
+.hljs-meta,
+.hljs-doctag,
+.hljs-decorator { color: var(--hljs-meta); }
+.hljs-params { color: var(--text-primary); }
+.hljs-tag .hljs-name { color: var(--hljs-keyword); }
+.hljs-tag .hljs-attr { color: var(--hljs-attr); }
+

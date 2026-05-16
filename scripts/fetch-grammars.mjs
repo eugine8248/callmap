@@ -21,16 +21,18 @@ const targets = [
   },
 ];
 
+// v0.3 update: source all grammars from `tree-sitter-wasms` so we get
+// ABI 14 WASMs that match the web-tree-sitter@0.24.x runtime we ship.
+// @vscode/tree-sitter-wasm packs newer ABI-15 grammars that the 0.24
+// runtime rejects with "Incompatible language version 15".
+const TS_WASMS_BASE = "https://unpkg.com/tree-sitter-wasms@0.1.11/out";
 const remotes = [
-  {
-    name: "tree-sitter-typescript.wasm",
-    // tree-sitter-wasms is a community-maintained set of prebuilt grammar WASMs.
-    url: "https://unpkg.com/@vscode/tree-sitter-wasm/wasm/tree-sitter-typescript.wasm",
-  },
-  {
-    name: "tree-sitter-javascript.wasm",
-    url: "https://unpkg.com/@vscode/tree-sitter-wasm/wasm/tree-sitter-javascript.wasm",
-  },
+  { name: "tree-sitter-typescript.wasm", url: `${TS_WASMS_BASE}/tree-sitter-typescript.wasm` },
+  { name: "tree-sitter-javascript.wasm", url: `${TS_WASMS_BASE}/tree-sitter-javascript.wasm` },
+  // v0.3: Python grammar — loaded lazily by parser.ts on first .py file.
+  { name: "tree-sitter-python.wasm", url: `${TS_WASMS_BASE}/tree-sitter-python.wasm` },
+  // v0.3: Go grammar — also lazy-loaded.
+  { name: "tree-sitter-go.wasm", url: `${TS_WASMS_BASE}/tree-sitter-go.wasm` },
 ];
 
 if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });

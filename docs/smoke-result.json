@@ -1,0 +1,15 @@
+{
+  "pr": {
+    "title": "perf: make no-options add 141% faster",
+    "url": "https://github.com/sindresorhus/p-queue/pull/245"
+  },
+  "stats": {
+    "filesScanned": 2,
+    "added": 1,
+    "removed": 1,
+    "changed": 3,
+    "contextNodes": 0,
+    "totalNodes": 5,
+    "totalEdges": 3
+  }
+}

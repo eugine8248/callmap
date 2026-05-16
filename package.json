@@ -1,38 +1,20 @@
 {
   "name": "callmap",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.5.0",
   "type": "module",
-  "description": "PR-delta callgraph viewer for code reviewers",
+  "description": "PR-delta callgraph viewer for code reviewers — npm workspaces monorepo (core + ui + desktop + vscode).",
   "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
-  },
-  "dependencies": {
-    "@tauri-apps/api": "^2.1.1",
-    "@tauri-apps/plugin-shell": "^2.0.1",
-    "@xyflow/react": "^12.3.5",
-    "dagre": "^0.8.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.27.0",
-    "web-tree-sitter": "^0.24.4"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2.1.0",
-    "@types/dagre": "^0.7.52",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.3",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.14",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.10"
+    "typecheck": "npm -w @callmap/core run typecheck && npm -w @callmap/ui run typecheck && npm -w @callmap/desktop run typecheck && npm -w callmap-vscode run typecheck",
+    "build": "npm -w @callmap/core run build && npm -w @callmap/ui run typecheck && npm -w @callmap/desktop run build && npm -w callmap-vscode run build",
+    "dev:desktop": "npm --workspace @callmap/desktop run dev",
+    "tauri:dev": "npm --workspace @callmap/desktop run tauri:dev",
+    "tauri:build": "npm --workspace @callmap/desktop run tauri:build",
+    "build:vscode": "npm --workspace callmap-vscode run build",
+    "package:vscode": "npm --workspace callmap-vscode run package"
   }
 }

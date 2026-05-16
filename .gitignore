@@ -9,6 +9,14 @@ dist/
 src-tauri/target/
 src-tauri/Cargo.lock
 src-tauri/gen/schemas/
+packages/desktop/src-tauri/target/
+packages/desktop/src-tauri/Cargo.lock
+packages/desktop/src-tauri/gen/schemas/
+
+# VS Code build outputs
+packages/vscode/media/
+packages/vscode/out/
+packages/vscode/*.vsix
 
 # Editors
 .vscode/

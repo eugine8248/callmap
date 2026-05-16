@@ -1,0 +1,15 @@
+# Tight allow-list: only ship what the extension needs to run inside
+# VS Code. Everything else (workspace deps, source, configs) is
+# excluded because npm workspaces hoist node_modules to the monorepo
+# root and vsce would otherwise walk up into ~2GB of sibling builds.
+
+**
+!media/**
+!out/**
+!package.json
+!README.md
+!LICENSE
+
+# Exclude .map files and source artifacts even from the allowed dirs.
+**/*.map
+out/**/*.ts
