@@ -1,0 +1,138 @@
+---
+import Base from "../layouts/Base.astro";
+import fs from "node:fs";
+import path from "node:path";
+
+// Parse AUTOMATION_LOG.md to extract v0.1..v1.0 sections.
+// We render each as a card. Bullet list items become <li>; everything else paragraph.
+const logPath = path.resolve("../../AUTOMATION_LOG.md");
+const raw = fs.existsSync(logPath) ? fs.readFileSync(logPath, "utf8") : "";
+
+interface VEntry {
+  version: string;
+  title: string;
+  status: string;
+  bodyLines: string[];
+}
+
+function parseLog(md: string): VEntry[] {
+  const lines = md.split(/\r?\n/);
+  const entries: VEntry[] = [];
+  let cur: VEntry | null = null;
+
+  for (const line of lines) {
+    const h2 = /^##\s+(v\d+\.\d+)\s*(?:—|--|-)?\s*(.+)?$/.exec(line);
+    if (h2) {
+      if (cur) entries.push(cur);
+      cur = { version: h2[1], title: (h2[2] || "").trim(), status: "", bodyLines: [] };
+      continue;
+    }
+    if (!cur) continue;
+    if (/^---\s*$/.test(line)) {
+      // section divider — stop accumulating until next h2
+      entries.push(cur);
+      cur = null;
+      continue;
+    }
+    if (/^#\s+/.test(line)) {
+      // top-level heading after entries — stop
+      entries.push(cur);
+      cur = null;
+      continue;
+    }
+    if (/^Status:/i.test(line) && !cur.status) {
+      cur.status = line.replace(/^Status:\s*/i, "").trim();
+    }
+    cur.bodyLines.push(line);
+  }
+  if (cur) entries.push(cur);
+  return entries.filter((e) => /^v\d+\.\d+$/.test(e.version));
+}
+
+const entries = parseLog(raw);
+
+// Order newest first.
+entries.sort((a, b) => {
+  const pa = a.version.slice(1).split(".").map(Number);
+  const pb = b.version.slice(1).split(".").map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    if ((pb[i] ?? 0) !== (pa[i] ?? 0)) return (pb[i] ?? 0) - (pa[i] ?? 0);
+  }
+  return 0;
+});
+
+// Strip status line from rendered body, format bullets.
+function renderBody(lines: string[]): string {
+  const cleaned = lines.filter((l) => !/^Status:/i.test(l));
+  // Trim leading/trailing empty lines.
+  while (cleaned.length && cleaned[0].trim() === "") cleaned.shift();
+  while (cleaned.length && cleaned[cleaned.length - 1].trim() === "") cleaned.pop();
+
+  // Minimal markdown rendering: bullet lists + bold + code spans + paragraphs.
+  const out: string[] = [];
+  let inList = false;
+
+  const inlineMd = (s: string): string =>
+    s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`)
+      .replace(/\*\*([^*]+)\*\*/g, (_, c) => `<strong>${c}</strong>`)
+      .replace(/\b(https?:\/\/[^\s)]+)/g, (_, u) => `<a href="${u}" rel="noopener">${u}</a>`)
+      .replace(/✅/g, '<span class="text-[var(--diff-added)]">✓</span>');
+
+  for (const raw of cleaned) {
+    const m = /^(\s*)[-*]\s+(.*)$/.exec(raw);
+    if (m) {
+      if (!inList) {
+        out.push('<ul class="list-disc list-inside space-y-1 text-[var(--text-secondary)] my-3">');
+        inList = true;
+      }
+      const indent = m[1].length;
+      const cls = indent >= 2 ? ' class="ml-5"' : "";
+      out.push(`<li${cls}>${inlineMd(m[2])}</li>`);
+    } else if (raw.trim() === "") {
+      if (inList) {
+        out.push("</ul>");
+        inList = false;
+      }
+    } else {
+      if (inList) {
+        out.push("</ul>");
+        inList = false;
+      }
+      out.push(`<p class="my-2 text-[var(--text-secondary)]">${inlineMd(raw)}</p>`);
+    }
+  }
+  if (inList) out.push("</ul>");
+  return out.join("\n");
+}
+---
+
+<Base title="callmap — Changelog">
+  <article class="max-w-3xl mx-auto px-5 py-12">
+    <h1 class="text-3xl font-semibold mb-2">Changelog</h1>
+    <p class="text-[var(--text-secondary)] mb-10">
+      The full autonomous build chain from v0.1 to v1.0, parsed live from
+      <code>AUTOMATION_LOG.md</code>.
+    </p>
+
+    {entries.length === 0 && (
+      <p class="text-[var(--text-secondary)]">No entries parsed.</p>
+    )}
+
+    {entries.map((e) => (
+      <section class="mb-10 p-5 rounded border border-[var(--border)] bg-[var(--bg-sidebar)]">
+        <header class="flex flex-wrap items-baseline gap-3 mb-3">
+          <h2 class="text-xl font-semibold text-[var(--text-primary)]">{e.version}</h2>
+          <span class="text-[var(--text-secondary)]">{e.title}</span>
+          {e.status && (
+            <span class="ml-auto text-xs text-[var(--diff-added)]">{e.status}</span>
+          )}
+        </header>
+        <div class="text-sm leading-relaxed" set:html={renderBody(e.bodyLines)} />
+      </section>
+    ))}
+  </article>
+</Base>

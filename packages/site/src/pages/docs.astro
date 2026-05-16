@@ -1,0 +1,178 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="callmap — Docs">
+  <article class="max-w-3xl mx-auto px-5 py-12 prose-invert">
+    <h1 class="text-3xl font-semibold mb-2">Documentation</h1>
+    <p class="text-[var(--text-secondary)] mb-10">
+      Everything you need to install callmap, open a PR, and navigate the graph.
+    </p>
+
+    <!-- TOC -->
+    <nav class="mb-10 p-4 border border-[var(--border)] rounded bg-[var(--bg-sidebar)] text-sm">
+      <strong class="block mb-2 text-[var(--text-primary)]">On this page</strong>
+      <ul class="list-disc list-inside text-[var(--text-secondary)] space-y-1">
+        <li><a href="#install">Install</a></li>
+        <li><a href="#paste-pr">Paste a PR URL</a></li>
+        <li><a href="#navigate">Navigate the graph</a></li>
+        <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+        <li><a href="#languages">Language support</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+      </ul>
+    </nav>
+
+    <!-- Install -->
+    <section id="install" class="mb-10">
+      <h2 class="text-2xl font-semibold mb-3">Install</h2>
+      <h3 class="text-lg mt-5 mb-2">Desktop app</h3>
+      <p>
+        Download the latest installer for your platform from the
+        <a href="https://github.com/eugine8248/callmap/releases">GitHub Releases</a> page.
+        Windows users get a SmartScreen warning the first time because v1.0 installers are
+        unsigned — code-signing is on the v1.1 roadmap. Click <em>More info → Run anyway</em>.
+      </p>
+      <ul class="list-disc list-inside text-[var(--text-secondary)] space-y-1 mt-2">
+        <li>Windows: <code>callmap_1.0.0_x64-setup.exe</code> (NSIS, ~2 MB) or <code>.msi</code> (~2.6 MB).</li>
+        <li>macOS: universal <code>.dmg</code> (Apple Silicon + Intel).</li>
+        <li>Linux: <code>.AppImage</code> or <code>.deb</code>.</li>
+      </ul>
+
+      <h3 class="text-lg mt-6 mb-2">VS Code extension</h3>
+      <p>Once the marketplace publisher lands (v1.0.x), install with:</p>
+      <pre><code>code --install-extension callmap.callmap</code></pre>
+      <p class="mt-2">Or grab the <code>.vsix</code> from the GitHub Release and install offline:</p>
+      <pre><code>code --install-extension callmap-1.0.0.vsix</code></pre>
+    </section>
+
+    <!-- Paste a PR -->
+    <section id="paste-pr" class="mb-10">
+      <h2 class="text-2xl font-semibold mb-3">Paste a PR URL</h2>
+      <p>
+        Open callmap, paste any public GitHub PR URL into the input on the home view, and
+        press Enter. callmap will:
+      </p>
+      <ol class="list-decimal list-inside text-[var(--text-secondary)] space-y-1 mt-2">
+        <li>Fetch the PR metadata, base SHA, head SHA, and the full list of changed files (paginated).</li>
+        <li>Pull both base and head versions of each <code>.ts/.tsx/.js/.jsx/.py/.go</code> file.</li>
+        <li>Parse them with tree-sitter (in a Web Worker), extract function declarations and call sites.</li>
+        <li>Build a PR-wide symbol table, classify each function as added / removed / changed / unchanged.</li>
+        <li>Trim to the one-hop neighbourhood of the changed set and lay out with dagre.</li>
+      </ol>
+      <p class="mt-3">
+        For private repos or to lift the 60/hour anonymous rate limit, add a GitHub Personal
+        Access Token in Settings (cog icon). Scope: <code>public_repo</code> for public PRs,
+        <code>repo</code> for private. On desktop, the token is stored in your OS keychain
+        (Credential Manager / Keychain / secret-service). In VS Code, callmap delegates to
+        the host's <code>vscode.authentication</code> GitHub session — no PAT required.
+      </p>
+    </section>
+
+    <!-- Navigate -->
+    <section id="navigate" class="mb-10">
+      <h2 class="text-2xl font-semibold mb-3">Navigate the graph</h2>
+      <ul class="list-disc list-inside text-[var(--text-secondary)] space-y-2">
+        <li><strong class="text-[var(--diff-added)]">Green</strong> nodes are functions added by this PR.</li>
+        <li><strong class="text-[var(--diff-removed)]">Red, ghosted</strong> nodes are functions removed.</li>
+        <li><strong class="text-[var(--diff-changed)]">Amber</strong> nodes are functions whose body changed.</li>
+        <li><strong>Neutral</strong> nodes are direct callers and callees, for context.</li>
+        <li><strong>Dashed external</strong> nodes are calls into symbols that live outside the PR's changed files.</li>
+      </ul>
+      <p class="mt-3">
+        Click any node to open the source panel — diff-highlighted for changed functions.
+        Right-click a node to bookmark it. The Bookmarks pane in the sidebar persists
+        per-PR. Use Ctrl+F (or ⌘F) to fuzzy-find any function by name, qualified name,
+        or filename.
+      </p>
+    </section>
+
+    <!-- Shortcuts table -->
+    <section id="shortcuts" class="mb-10">
+      <h2 class="text-2xl font-semibold mb-3">Keyboard shortcuts</h2>
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="border-b border-[var(--border)] text-left text-[var(--text-secondary)]">
+            <th class="py-2 pr-4 font-medium">Shortcut</th>
+            <th class="py-2 pr-4 font-medium">Action</th>
+          </tr>
+        </thead>
+        <tbody class="text-[var(--text-primary)]">
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4 font-mono">Ctrl/⌘ + Shift + P</td><td>Open command palette</td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4 font-mono">Ctrl/⌘ + P</td><td>Quick-open recent PRs</td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4 font-mono">Ctrl/⌘ + T</td><td>Jump to function (centers viewport)</td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4 font-mono">Ctrl/⌘ + F</td><td>Find widget (in-graph fuzzy search)</td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4 font-mono">Ctrl/⌘ + B</td><td>Toggle sidebar</td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4 font-mono">Ctrl/⌘ + Shift + M</td><td>Toggle minimap</td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4 font-mono">Enter / Up / Down</td><td>Step through find-widget matches</td></tr>
+          <tr><td class="py-2 pr-4 font-mono">Esc</td><td>Close source panel / find widget</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <!-- Languages -->
+    <section id="languages" class="mb-10">
+      <h2 class="text-2xl font-semibold mb-3">Language support</h2>
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="border-b border-[var(--border)] text-left text-[var(--text-secondary)]">
+            <th class="py-2 pr-4 font-medium">Language</th>
+            <th class="py-2 pr-4 font-medium">Status</th>
+            <th class="py-2 pr-4 font-medium">Notes</th>
+          </tr>
+        </thead>
+        <tbody class="text-[var(--text-primary)]">
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4">TypeScript / TSX</td><td class="text-[var(--diff-added)]">Full</td><td>Class methods name-qualified</td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4">JavaScript / JSX</td><td class="text-[var(--diff-added)]">Full</td><td>Falls back to regex if grammar fails to load</td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4">Python</td><td class="text-[var(--diff-added)]">Full</td><td>Methods qualified as <code>Class.method</code></td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4">Go</td><td class="text-[var(--diff-added)]">Full</td><td>Receiver methods qualified as <code>*Recv.Method</code></td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4">Rust</td><td class="text-[var(--text-secondary)]">Deferred</td><td>Roadmap</td></tr>
+          <tr class="border-b border-[var(--border)]"><td class="py-2 pr-4">Java</td><td class="text-[var(--text-secondary)]">Deferred</td><td>Roadmap</td></tr>
+          <tr><td class="py-2 pr-4">C# / C++ / others</td><td class="text-[var(--text-secondary)]">Deferred</td><td>Open an issue if you want one prioritized</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <!-- Troubleshooting -->
+    <section id="troubleshooting" class="mb-10">
+      <h2 class="text-2xl font-semibold mb-3">Troubleshooting</h2>
+
+      <h3 class="text-lg mt-5 mb-2">"Rate limit exceeded"</h3>
+      <p>
+        Anonymous GitHub API calls cap at 60/hour. Add a Personal Access Token in Settings.
+        The live <code>X-RateLimit-Remaining</code> indicator sits in the top-right of the
+        graph view.
+      </p>
+
+      <h3 class="text-lg mt-5 mb-2">SmartScreen blocks the installer</h3>
+      <p>
+        v1.0 binaries are unsigned. Click <em>More info → Run anyway</em>. Code-signing
+        ships in v1.1. If you'd rather build from source, the repo has a
+        <code>npm run tauri:build</code> script.
+      </p>
+
+      <h3 class="text-lg mt-5 mb-2">"Ambiguous" markers on resolved calls</h3>
+      <p>
+        callmap v1.0 doesn't parse imports — when two functions in the changed set share a
+        short name, the call site stays unresolved with an ambiguity flag rather than
+        guessing. Import-graph awareness is on the roadmap.
+      </p>
+
+      <h3 class="text-lg mt-5 mb-2">Some callees show as dashed "ext" nodes</h3>
+      <p>
+        Those callees live outside the PR's changed files. callmap doesn't fetch unrelated
+        files just to resolve names — that would be slow and expensive on the rate limit.
+        One-hop external resolution is on the roadmap.
+      </p>
+
+      <h3 class="text-lg mt-5 mb-2">Still stuck?</h3>
+      <p>
+        <a href="https://github.com/eugine8248/callmap/issues">Open an issue</a> with the
+        PR URL, your OS, and what you expected. Bug reports are gold.
+      </p>
+    </section>
+  </article>
+</Base>

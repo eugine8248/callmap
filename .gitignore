@@ -34,3 +34,7 @@ pnpm-debug.log*
 *.deb
 *.dmg
 *.AppImage
+
+# Astro
+packages/site/.astro/
+packages/site/src/env.d.ts

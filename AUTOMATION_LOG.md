@@ -88,13 +88,43 @@ Mode: Autonomous build v0.1 → v1.0. No per-version approval; user-action items
   - Code-signed installer (separate v1.1 milestone).
 
 ## v1.0 — Launch package
-- Status: queued
-- Scope:
-  - Docs site (Astro or Vite-SSG), screenshots, demo GIF
-  - Show HN + Product Hunt launch copy (drafts written, posting timing is the user's call)
-  - GitHub Sponsors button + "if you like this, audit your repo with GitAudit" cross-link
-  - GitHub Actions: build + release pipeline (unsigned for v1.0, code-signed in v1.1)
-- User action required: domain decision (callmap.dev recommended) + Show HN/PH submission timing — see NEEDS_APPROVAL.md C2, C3
+- Status: ✅ **complete** 2026-05-16
+- Landed:
+  - **Docs + landing site** — new `@callmap/site` workspace under `packages/site/`, Astro 4.16 + Tailwind 3, dark-by-default, IDE color tokens carried over from `@callmap/ui` (editor #1e1e1e, accent #007acc, diff palette). Three pages: `/` (hero + demo + 4 feature blocks + 3 screenshots + CTA), `/docs` (install, paste-PR, navigate, keyboard shortcuts table, language matrix, troubleshooting), `/changelog` (parses this file at build time and renders cards newest-first). Static output to `packages/site/dist/`. Initial HTML+CSS **~6 KB gzipped** (well under the 200 KB ceiling). Telemetry disabled.
+  - **Screenshots + demo** — high-fidelity SVG mockups in `packages/site/public/` styled exactly to the production IDE tokens: `screenshot-graph.svg` (callgraph view, sindresorhus/p-queue#245 layout, 1920×1200), `screenshot-source.svg` (graph + source panel split), `screenshot-vscode.svg` (extension inside VS Code shell). `demo.svg` static preview. `demo.gif` 43-byte transparent placeholder. Real-capture recipe in `packages/site/public/TODO_DEMO_GIF.md` (ffmpeg + OBS not on PATH in this env — single-pass headless capture of the live Tauri app on Windows was infeasible; site renders correctly today, swap recipe takes ~30 min).
+  - **Launch copy** — `packages/site/launch/show-hn.md` (title, URL strategy, full first-comment, three-bullet TL;DR, anticipated-questions answers, posting checklist) and `packages/site/launch/product-hunt.md` (60-char tagline, 260-char description, longer launch body, three "What's special" bullets, "Who's it for", maker-comment draft, topics, checklist).
+  - **GitHub Sponsors + funding** — `.github/FUNDING.yml` with `github: eugine8248`. README header badge row gets a Sponsors badge. Landing footer + final CTA link to Sponsors. README also wires "Star on GitHub" and "Report an issue" as the secondary CTAs.
+  - **CI + release pipelines** — `.github/workflows/release.yml` fires on `v*` tag, builds Tauri installers on `windows-latest`/`macos-latest`/`ubuntu-22.04` via `tauri-apps/tauri-action@v0`, then a separate `vscode` job builds and uploads the `.vsix` to the same draft release via `softprops/action-gh-release@v2`. Unsigned (code-signing flagged as v1.1 in SECURITY.md). `.github/workflows/ci.yml` runs `npm run typecheck` + `npm run build` + `vsce package` on every push and PR plus a separate `site` job that builds the Astro site. Old single-purpose `build.yml` removed.
+  - **README + repo polish** — top-level `README.md` rewritten as a real OSS README with badge row (CI, MIT, Sponsors, VS Code installs, GitHub release), demo image, three-bullet features, install matrix, "How it works" 3 steps, roadmap link, develop-locally quickstart. New `CONTRIBUTING.md` (repo layout table, add-a-language recipe, style guide). New `SECURITY.md` (private-reporting flow via GH Security Advisories + email, scope, in/out, unsigned-binary note, data-handling). `.github/ISSUE_TEMPLATE/bug-report.yml` + `feature-request.yml` form templates. `.github/PULL_REQUEST_TEMPLATE.md` checklist. `LICENSE` MIT verified present from v0.1.
+  - **Release notes** — `RELEASE_NOTES_v1.0.md` with one-paragraph-per-version chain summary, feature highlight reel, build-artifact size table, known-limitations section.
+  - **Launch report** — `V1_REPORT.md` at repo root with the full step-by-step launch checklist: (1) domain (C2), (2) marketplace publisher (C1), (3) site deploy (GitHub Pages fallback + Cloudflare Pages recipe), (4) push to GitHub (`gh repo create callmap --public --source=.`), (5) tag + push v1.0.0, (6) submit Show HN + PH on chosen morning (C3).
+- Verification:
+  - `npm install` — added 246 packages for the new site workspace (astro@4.16, @astrojs/tailwind, tailwindcss already hoisted)
+  - `npm run typecheck` — clean across all 4 code workspaces (site uses its own `astro check` shim)
+  - `npm run build` — clean (desktop webview + vscode webview + vscode parse worker + vscode extension TS)
+  - `npm --workspace @callmap/site run build` — 3 static pages, 821 ms
+  - `astro telemetry disable` — opted out
+- Build outputs:
+  - **Site initial HTML+CSS gzip**: ~6 KB (under the 200 KB target by 33×)
+  - **Site total dist**: ~57 KB across 3 HTML pages + 1 CSS + 4 SVG images + 1 GIF placeholder + TODO file. No JS shipped (Astro static).
+  - **Desktop + VS Code bundles**: unchanged from v0.5 — desktop 157.30 KB gzip initial, vsix 644 KB.
+- Workarounds:
+  - Astro pinned to `^4.16.0` rather than 6.x — smaller install, fewer migration risks for a 3-page static site, and `@astrojs/tailwind` v5 is the stable companion.
+  - Single-pass headless screenshot/GIF capture on Windows was infeasible without Playwright/Puppeteer/ffmpeg installed; shipped high-fidelity SVG mockups + a step-by-step real-capture recipe in `TODO_DEMO_GIF.md` instead. SVGs reference the same `--bg-editor`, `--diff-added` etc. token values so the site visually echoes the product accurately.
+  - Astro's `BASE_URL` is consumed in templates with a trailing-slash strip so the same source builds correctly for either `https://callmap.dev/` (base `/`) or `https://eugine8248.github.io/callmap/` (base `/callmap/` via the `CALLMAP_SITE_BASE` env var set in CI).
+- Still user-blocked:
+  - **C1** — VS Code marketplace publisher account (vsix sits ready, ship-around: README install command links to the GitHub Release `.vsix`)
+  - **C2** — Domain (site ships to `eugine8248.github.io/callmap` as the documented fallback)
+  - **C3** — Show HN + Product Hunt launch timing (copy drafted; user picks the morning)
+- Push instructions for the user (NOT executed by the chain — `gh` CLI per auto-memory):
+  ```bash
+  winget install --id GitHub.cli
+  gh auth login
+  gh repo create callmap --public --source=. --remote=origin
+  git push -u origin main
+  git push origin v1.0.0   # triggers .github/workflows/release.yml
+  ```
+- Final commit on `main`: `v1.0 — launch package: site, docs, release pipeline, README polish`. Tag: `v1.0.0` (annotated).
 
 ---
 

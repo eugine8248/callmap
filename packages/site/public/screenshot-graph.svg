@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1200" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">
+  <!-- Background -->
+  <rect width="1920" height="1200" fill="#1e1e1e"/>
+
+  <!-- Title bar -->
+  <rect x="0" y="0" width="1920" height="30" fill="#3c3c3c"/>
+  <text x="20" y="20" fill="#cccccc" font-size="12">callmap — sindresorhus/p-queue#245 — async-init wait-until-empty</text>
+
+  <!-- Activity bar -->
+  <rect x="0" y="30" width="48" height="1140" fill="#333333"/>
+  <g fill="#9d9d9d" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="20" text-anchor="middle">
+    <rect x="0" y="30" width="48" height="48" fill="#1e1e1e"/>
+    <text x="24" y="62" fill="#ffffff">⇢</text>
+    <text x="24" y="116" fill="#9d9d9d">⏱</text>
+    <text x="24" y="170" fill="#9d9d9d">★</text>
+    <text x="24" y="224" fill="#9d9d9d">⌘</text>
+    <text x="24" y="278" fill="#9d9d9d">⚑</text>
+    <text x="24" y="1130" fill="#9d9d9d">⚙</text>
+  </g>
+
+  <!-- Sidebar -->
+  <rect x="48" y="30" width="320" height="1140" fill="#252526"/>
+  <text x="64" y="58" fill="#9d9d9d" font-size="11" letter-spacing="0.8">PR EXPLORER</text>
+
+  <!-- Sidebar PR header -->
+  <rect x="60" y="76" width="296" height="58" fill="#2a2d2e" rx="2"/>
+  <text x="72" y="96" fill="#cccccc" font-size="13" font-weight="600">#245 async-init</text>
+  <text x="72" y="116" fill="#9d9d9d" font-size="11">sindresorhus/p-queue · base→head</text>
+  <text x="72" y="130" fill="#9d9d9d" font-size="11">7 files · 5 funcs</text>
+
+  <!-- File tree -->
+  <g font-size="12" fill="#cccccc" font-family="ui-monospace,Consolas,monospace">
+    <text x="68" y="160" fill="#9d9d9d" font-size="11">CHANGED FILES</text>
+    <text x="68" y="186">▾ source/</text>
+    <text x="84" y="206">  <tspan fill="#dcdcaa">●</tspan> index.ts</text>
+    <text x="84" y="226">  <tspan fill="#4ec9b0">●</tspan> queue.ts</text>
+    <text x="84" y="246">  <tspan fill="#dcdcaa">●</tspan> priority-queue.ts</text>
+    <text x="84" y="266">  <tspan fill="#f48771">●</tspan> options.ts</text>
+    <text x="68" y="290">▾ test/</text>
+    <text x="84" y="310">  <tspan fill="#dcdcaa">●</tspan> test.ts</text>
+    <text x="84" y="330">  <tspan fill="#4ec9b0">●</tspan> async-init.ts</text>
+    <text x="84" y="350">  <tspan fill="#dcdcaa">●</tspan> helpers.ts</text>
+
+    <text x="68" y="392" fill="#9d9d9d" font-size="11">LANGUAGES</text>
+    <text x="68" y="416">TypeScript · 7</text>
+
+    <text x="68" y="460" fill="#9d9d9d" font-size="11">RECENT</text>
+    <text x="68" y="484" fill="#9d9d9d">pallets/flask#6013</text>
+    <text x="68" y="504" fill="#9d9d9d">spf13/cobra#2397</text>
+  </g>
+
+  <!-- Breadcrumbs -->
+  <rect x="368" y="30" width="1552" height="28" fill="#1e1e1e"/>
+  <text x="384" y="48" fill="#9d9d9d" font-size="12">PR Explorer · #245 · 5 functions</text>
+
+  <!-- Graph area -->
+  <rect x="368" y="58" width="1552" height="1085" fill="#1e1e1e"/>
+
+  <!-- xyflow grid dots -->
+  <g fill="#2a2a2a">
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="0.8" fill="#2a2a2a"/>
+    </pattern>
+    <rect x="368" y="58" width="1552" height="1085" fill="url(#grid)"/>
+  </g>
+
+  <!-- Edges (drawn behind nodes) -->
+  <g fill="none" stroke="#555555" stroke-width="1.5">
+    <path d="M 760 290 C 760 360 1000 360 1000 430"/>
+    <path d="M 1140 290 C 1140 360 1080 360 1080 430"/>
+    <path d="M 1000 540 C 1000 620 760 620 760 700"/>
+    <path d="M 1080 540 C 1080 620 1280 620 1280 700"/>
+    <path d="M 760 810 C 760 880 880 880 880 950"/>
+    <path d="M 1280 810 C 1280 880 1160 880 1160 950"/>
+  </g>
+  <!-- Edge arrowheads -->
+  <g fill="#555555">
+    <polygon points="996,428 1004,428 1000,438"/>
+    <polygon points="1076,428 1084,428 1080,438"/>
+    <polygon points="756,698 764,698 760,708"/>
+    <polygon points="1276,698 1284,698 1280,708"/>
+    <polygon points="876,948 884,948 880,958"/>
+    <polygon points="1156,948 1164,948 1160,958"/>
+  </g>
+
+  <!-- Top row: 2 changed (callers) -->
+  <g>
+    <rect x="660" y="220" width="200" height="70" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa" stroke-width="1.5"/>
+    <text x="676" y="244" fill="#dcdcaa" font-size="10" letter-spacing="0.6">CHANGED</text>
+    <text x="676" y="266" fill="#cccccc" font-size="14" font-weight="600">PQueue.add</text>
+    <text x="676" y="284" fill="#9d9d9d" font-size="11">queue.ts:142</text>
+  </g>
+  <g>
+    <rect x="1040" y="220" width="200" height="70" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa" stroke-width="1.5"/>
+    <text x="1056" y="244" fill="#dcdcaa" font-size="10" letter-spacing="0.6">CHANGED</text>
+    <text x="1056" y="266" fill="#cccccc" font-size="14" font-weight="600">PQueue.onIdle</text>
+    <text x="1056" y="284" fill="#9d9d9d" font-size="11">queue.ts:268</text>
+  </g>
+
+  <!-- Middle row: ADDED -->
+  <g>
+    <rect x="900" y="430" width="280" height="110" rx="6" fill="rgba(78,201,176,0.12)" stroke="#4ec9b0" stroke-width="2"/>
+    <text x="916" y="456" fill="#4ec9b0" font-size="11" letter-spacing="0.6">ADDED</text>
+    <text x="916" y="482" fill="#cccccc" font-size="16" font-weight="700">PQueue.onSizeLessThan</text>
+    <text x="916" y="504" fill="#9d9d9d" font-size="12">queue.ts:301</text>
+    <text x="916" y="522" fill="#9d9d9d" font-size="11">+22 lines · 3 callers</text>
+  </g>
+
+  <!-- Third row -->
+  <g>
+    <rect x="660" y="700" width="200" height="70" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa" stroke-width="1.5"/>
+    <text x="676" y="724" fill="#dcdcaa" font-size="10" letter-spacing="0.6">CHANGED</text>
+    <text x="676" y="746" fill="#cccccc" font-size="14" font-weight="600">runOptionsFlow</text>
+    <text x="676" y="764" fill="#9d9d9d" font-size="11">index.ts:88</text>
+  </g>
+  <g>
+    <rect x="1180" y="700" width="200" height="70" rx="6" fill="rgba(244,135,113,0.12)" stroke="#f48771" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="1196" y="724" fill="#f48771" font-size="10" letter-spacing="0.6">REMOVED</text>
+    <text x="1196" y="746" fill="#cccccc" font-size="14" font-weight="600" opacity="0.7">PQueue.clearAll</text>
+    <text x="1196" y="764" fill="#9d9d9d" font-size="11">options.ts:54</text>
+  </g>
+
+  <!-- Bottom row external -->
+  <g>
+    <rect x="780" y="950" width="200" height="60" rx="6" fill="rgba(133,133,133,0.10)" stroke="#858585" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="796" y="974" fill="#858585" font-size="10" letter-spacing="0.6">EXT</text>
+    <text x="796" y="996" fill="#9d9d9d" font-size="13">setTimeout</text>
+  </g>
+  <g>
+    <rect x="1060" y="950" width="200" height="60" rx="6" fill="rgba(133,133,133,0.10)" stroke="#858585" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="1076" y="974" fill="#858585" font-size="10" letter-spacing="0.6">EXT</text>
+    <text x="1076" y="996" fill="#9d9d9d" font-size="13">eventIterator</text>
+  </g>
+
+  <!-- Find-widget overlay -->
+  <g>
+    <rect x="1620" y="80" width="280" height="40" rx="3" fill="#252526" stroke="#3c3c3c" stroke-width="1"/>
+    <text x="1632" y="105" fill="#cccccc" font-size="13" font-family="ui-monospace,Consolas,monospace">onSize</text>
+    <text x="1840" y="105" fill="#9d9d9d" font-size="11" text-anchor="end">1 of 1</text>
+  </g>
+
+  <!-- Status bar -->
+  <rect x="0" y="1170" width="1920" height="30" fill="#007acc"/>
+  <g fill="#ffffff" font-size="12">
+    <text x="20" y="1190">⎇ #245 · base d4a → head 9c1</text>
+    <text x="360" y="1190">5 funcs (5 ts) · 6 edges</text>
+    <text x="640" y="1190">parsed 7 / 7 files</text>
+    <text x="1640" y="1190">rate: 4992 / 5000</text>
+    <text x="1820" y="1190">⊞ minimap</text>
+  </g>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">
+  <rect width="1280" height="720" fill="#1e1e1e"/>
+
+  <!-- Title bar -->
+  <rect x="0" y="0" width="1280" height="28" fill="#3c3c3c"/>
+  <text x="16" y="19" fill="#cccccc" font-size="11">callmap — sindresorhus/p-queue#245</text>
+
+  <!-- Activity bar -->
+  <rect x="0" y="28" width="36" height="664" fill="#333333"/>
+
+  <!-- Sidebar -->
+  <rect x="36" y="28" width="220" height="664" fill="#252526"/>
+  <text x="48" y="54" fill="#9d9d9d" font-size="10" letter-spacing="0.7">PR EXPLORER</text>
+  <rect x="44" y="70" width="200" height="42" fill="#2a2d2e" rx="2"/>
+  <text x="56" y="88" fill="#cccccc" font-size="11" font-weight="600">#245 async-init</text>
+  <text x="56" y="104" fill="#9d9d9d" font-size="10">sindresorhus/p-queue</text>
+
+  <!-- Graph -->
+  <rect x="256" y="28" width="1024" height="664" fill="#1e1e1e"/>
+  <g fill="none" stroke="#555555" stroke-width="1.4">
+    <path d="M 520 200 C 520 280 720 280 720 360"/>
+    <path d="M 920 200 C 920 280 820 280 820 360"/>
+    <path d="M 720 480 C 720 560 540 560 540 620"/>
+    <path d="M 820 480 C 820 560 940 560 940 620"/>
+  </g>
+  <g>
+    <rect x="420" y="140" width="200" height="60" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa"/>
+    <text x="436" y="160" fill="#dcdcaa" font-size="9">CHANGED</text>
+    <text x="436" y="180" fill="#cccccc" font-size="13">PQueue.add</text>
+  </g>
+  <g>
+    <rect x="820" y="140" width="200" height="60" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa"/>
+    <text x="836" y="160" fill="#dcdcaa" font-size="9">CHANGED</text>
+    <text x="836" y="180" fill="#cccccc" font-size="13">PQueue.onIdle</text>
+  </g>
+  <g>
+    <rect x="620" y="360" width="240" height="120" rx="6" fill="rgba(78,201,176,0.18)" stroke="#4ec9b0" stroke-width="2.5"/>
+    <text x="636" y="386" fill="#4ec9b0" font-size="10">ADDED</text>
+    <text x="636" y="410" fill="#cccccc" font-size="14" font-weight="700">PQueue.onSizeLessThan</text>
+    <text x="636" y="430" fill="#9d9d9d" font-size="11">queue.ts:301</text>
+    <text x="636" y="450" fill="#9d9d9d" font-size="11">+22 lines · 3 callers</text>
+  </g>
+
+  <!-- Caption banner -->
+  <rect x="0" y="660" width="1280" height="32" fill="#000000" opacity="0.85"/>
+  <text x="640" y="681" fill="#cccccc" font-size="13" text-anchor="middle">▶ Paste a PR URL · See the delta · Click a node · Find with Ctrl+F · Bookmark</text>
+
+  <!-- Status bar -->
+  <rect x="0" y="692" width="1280" height="28" fill="#007acc"/>
+  <text x="16" y="711" fill="#ffffff" font-size="11">⎇ #245 · 5 funcs (5 ts) · 6 edges</text>
+  <text x="1264" y="711" fill="#ffffff" font-size="11" text-anchor="end">demo · static preview</text>
+</svg>

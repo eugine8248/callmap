@@ -1,0 +1,62 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "See what a pull request actually changes. PR-delta callgraph viewer for code reviewers — desktop app and VS Code extension. MIT, no telemetry." } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#1e1e1e" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <header class="border-b border-[var(--border)] bg-[var(--bg-sidebar)]">
+      <div class="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between">
+        <a href={`${base}/`} class="flex items-center gap-2 !text-[var(--text-primary)] hover:!no-underline">
+          <span class="inline-block w-5 h-5 rounded-sm bg-[var(--accent)] flex items-center justify-center text-[10px] font-bold text-white">cm</span>
+          <span class="font-semibold">callmap</span>
+          <span class="text-[var(--text-secondary)] text-xs ml-2">v1.0</span>
+        </a>
+        <nav class="flex items-center gap-5 text-sm">
+          <a href={`${base}/`}>Home</a>
+          <a href={`${base}/docs/`}>Docs</a>
+          <a href={`${base}/changelog/`}>Changelog</a>
+          <a href="https://github.com/eugine8248/callmap" rel="noopener">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <footer class="border-t border-[var(--border)] mt-16 py-8 text-sm text-[var(--text-secondary)]">
+      <div class="max-w-5xl mx-auto px-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span>callmap is MIT-licensed.</span>
+          <span class="mx-2">·</span>
+          <span>No telemetry. No analytics.</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="https://github.com/sponsors/eugine8248" rel="noopener">Support the project</a>
+          <a href="https://github.com/eugine8248/callmap/issues" rel="noopener">Report an issue</a>
+          <a href="https://github.com/eugine8248/callmap" rel="noopener">Star on GitHub</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

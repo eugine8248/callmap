@@ -1,0 +1,76 @@
+name: Bug report
+description: Something parses or renders wrong — please tell us.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. The most useful reports
+        include the PR URL you tried, your OS, and what you expected to see.
+
+  - type: input
+    id: pr-url
+    attributes:
+      label: PR URL
+      description: The GitHub PR that exposes the bug, if it's reproducible against one.
+      placeholder: https://github.com/sindresorhus/p-queue/pull/245
+    validations:
+      required: false
+
+  - type: dropdown
+    id: shell
+    attributes:
+      label: Which build?
+      options:
+        - Desktop (Tauri)
+        - VS Code extension
+        - Both
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: callmap version
+      placeholder: v1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      placeholder: I expected the green node for `foo` to connect to its caller `bar`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console / DevTools output (optional)
+      description: Open DevTools (Ctrl+Shift+I on desktop) and paste any errors.
+      render: text
+    validations:
+      required: false

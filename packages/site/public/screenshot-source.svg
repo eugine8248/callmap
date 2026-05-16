@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1200" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">
+  <rect width="1920" height="1200" fill="#1e1e1e"/>
+
+  <!-- Title bar -->
+  <rect x="0" y="0" width="1920" height="30" fill="#3c3c3c"/>
+  <text x="20" y="20" fill="#cccccc" font-size="12">callmap — sindresorhus/p-queue#245 — source panel</text>
+
+  <!-- Activity bar -->
+  <rect x="0" y="30" width="48" height="1140" fill="#333333"/>
+
+  <!-- Sidebar -->
+  <rect x="48" y="30" width="280" height="1140" fill="#252526"/>
+  <text x="64" y="58" fill="#9d9d9d" font-size="11" letter-spacing="0.8">CHANGED FUNCTIONS</text>
+  <g font-size="13" fill="#cccccc">
+    <rect x="60" y="78" width="256" height="32" fill="#094771" rx="2"/>
+    <text x="76" y="100" fill="#ffffff"><tspan fill="#4ec9b0">●</tspan>  PQueue.onSizeLessThan</text>
+    <text x="76" y="138" fill="#cccccc"><tspan fill="#dcdcaa">●</tspan>  PQueue.add</text>
+    <text x="76" y="170" fill="#cccccc"><tspan fill="#dcdcaa">●</tspan>  PQueue.onIdle</text>
+    <text x="76" y="202" fill="#cccccc" opacity="0.7"><tspan fill="#f48771">●</tspan>  PQueue.clearAll</text>
+    <text x="76" y="234" fill="#cccccc"><tspan fill="#dcdcaa">●</tspan>  runOptionsFlow</text>
+  </g>
+
+  <!-- Reduced graph (left) -->
+  <rect x="328" y="30" width="780" height="1140" fill="#1e1e1e"/>
+  <text x="348" y="58" fill="#9d9d9d" font-size="12">PR Explorer · #245 · PQueue.onSizeLessThan</text>
+  <g fill="none" stroke="#555555" stroke-width="1.4">
+    <path d="M 520 220 C 520 300 600 300 600 360"/>
+    <path d="M 720 220 C 720 300 660 300 660 360"/>
+    <path d="M 600 460 C 600 540 520 540 520 600"/>
+    <path d="M 660 460 C 660 540 720 540 720 600"/>
+  </g>
+  <g>
+    <rect x="420" y="160" width="200" height="60" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa"/>
+    <text x="436" y="180" fill="#dcdcaa" font-size="9">CHANGED</text>
+    <text x="436" y="200" fill="#cccccc" font-size="13">PQueue.add</text>
+  </g>
+  <g>
+    <rect x="640" y="160" width="200" height="60" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa"/>
+    <text x="656" y="180" fill="#dcdcaa" font-size="9">CHANGED</text>
+    <text x="656" y="200" fill="#cccccc" font-size="13">PQueue.onIdle</text>
+  </g>
+  <g>
+    <rect x="500" y="360" width="240" height="100" rx="6" fill="rgba(78,201,176,0.18)" stroke="#4ec9b0" stroke-width="2.5"/>
+    <text x="516" y="382" fill="#4ec9b0" font-size="10">ADDED · SELECTED</text>
+    <text x="516" y="406" fill="#cccccc" font-size="14" font-weight="700">PQueue.onSizeLessThan</text>
+    <text x="516" y="425" fill="#9d9d9d" font-size="11">queue.ts:301</text>
+    <text x="516" y="445" fill="#9d9d9d" font-size="11">+22 lines · 3 callers</text>
+  </g>
+  <g>
+    <rect x="420" y="600" width="200" height="60" rx="6" fill="rgba(133,133,133,0.10)" stroke="#858585" stroke-dasharray="3,3"/>
+    <text x="436" y="620" fill="#858585" font-size="9">EXT</text>
+    <text x="436" y="640" fill="#9d9d9d" font-size="13">setTimeout</text>
+  </g>
+  <g>
+    <rect x="640" y="600" width="200" height="60" rx="6" fill="rgba(133,133,133,0.10)" stroke="#858585" stroke-dasharray="3,3"/>
+    <text x="656" y="620" fill="#858585" font-size="9">EXT</text>
+    <text x="656" y="640" fill="#9d9d9d" font-size="13">eventIterator</text>
+  </g>
+
+  <!-- Source panel (right) -->
+  <rect x="1108" y="30" width="812" height="1140" fill="#1e1e1e"/>
+  <rect x="1108" y="30" width="812" height="36" fill="#252526"/>
+  <text x="1124" y="54" fill="#cccccc" font-size="12" font-family="ui-monospace,Consolas,monospace">source/queue.ts</text>
+  <text x="1880" y="54" fill="#9d9d9d" font-size="11" text-anchor="end">×</text>
+
+  <!-- Line gutter -->
+  <g fill="#6a6a6a" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12" text-anchor="end">
+    <text x="1140" y="100">298</text>
+    <text x="1140" y="120">299</text>
+    <text x="1140" y="140">300</text>
+    <text x="1140" y="160">301</text>
+    <text x="1140" y="180">302</text>
+    <text x="1140" y="200">303</text>
+    <text x="1140" y="220">304</text>
+    <text x="1140" y="240">305</text>
+    <text x="1140" y="260">306</text>
+    <text x="1140" y="280">307</text>
+    <text x="1140" y="300">308</text>
+    <text x="1140" y="320">309</text>
+    <text x="1140" y="340">310</text>
+    <text x="1140" y="360">311</text>
+    <text x="1140" y="380">312</text>
+    <text x="1140" y="400">313</text>
+    <text x="1140" y="420">314</text>
+    <text x="1140" y="440">315</text>
+    <text x="1140" y="460">316</text>
+    <text x="1140" y="480">317</text>
+    <text x="1140" y="500">318</text>
+    <text x="1140" y="520">319</text>
+    <text x="1140" y="540">320</text>
+    <text x="1140" y="560">321</text>
+    <text x="1140" y="580">322</text>
+  </g>
+
+  <!-- Added line gutter strip -->
+  <rect x="1148" y="148" width="4" height="280" fill="#4ec9b0" opacity="0.7"/>
+  <!-- Highlight call-site lines -->
+  <rect x="1148" y="408" width="752" height="20" fill="rgba(0,122,204,0.18)"/>
+
+  <!-- Source code -->
+  <g font-family="ui-monospace,Menlo,Consolas,monospace" font-size="13.5" fill="#d4d4d4">
+    <text x="1160" y="100"><tspan fill="#9cdcfe">async</tspan> <tspan fill="#dcdcaa">onIdle</tspan>(): <tspan fill="#4ec9b0">Promise</tspan>&lt;<tspan fill="#4ec9b0">void</tspan>&gt; {</text>
+    <text x="1160" y="120">  <tspan fill="#c586c0">return</tspan> <tspan fill="#9cdcfe">this</tspan>.onSizeLessThan(<tspan fill="#b5cea8">1</tspan>);</text>
+    <text x="1160" y="140">}</text>
+    <text x="1160" y="160"></text>
+    <text x="1160" y="180" fill="#4ec9b0">  /**</text>
+    <text x="1160" y="200" fill="#4ec9b0">   * Resolves when the queue size drops below `limit`.</text>
+    <text x="1160" y="220" fill="#4ec9b0">   * Returns immediately if already there.</text>
+    <text x="1160" y="240" fill="#4ec9b0">   */</text>
+    <text x="1160" y="260"><tspan fill="#9cdcfe">async</tspan> <tspan fill="#dcdcaa">onSizeLessThan</tspan>(<tspan fill="#9cdcfe">limit</tspan>: <tspan fill="#4ec9b0">number</tspan>): <tspan fill="#4ec9b0">Promise</tspan>&lt;<tspan fill="#4ec9b0">void</tspan>&gt; {</text>
+    <text x="1160" y="280">  <tspan fill="#c586c0">if</tspan> (<tspan fill="#9cdcfe">this</tspan>.<tspan fill="#9cdcfe">size</tspan> &lt; limit) {</text>
+    <text x="1160" y="300">    <tspan fill="#c586c0">return</tspan>;</text>
+    <text x="1160" y="320">  }</text>
+    <text x="1160" y="340"></text>
+    <text x="1160" y="360">  <tspan fill="#c586c0">return</tspan> <tspan fill="#c586c0">new</tspan> <tspan fill="#4ec9b0">Promise</tspan>(resolve =&gt; {</text>
+    <text x="1160" y="380">    <tspan fill="#9cdcfe">this</tspan>.<tspan fill="#dcdcaa">_resolveSizeListeners</tspan>.<tspan fill="#dcdcaa">push</tspan>({</text>
+    <text x="1160" y="400">      limit,</text>
+    <text x="1160" y="420">      resolve: () =&gt; <tspan fill="#dcdcaa">setTimeout</tspan>(resolve, <tspan fill="#b5cea8">0</tspan>),</text>
+    <text x="1160" y="440">    });</text>
+    <text x="1160" y="460">  });</text>
+    <text x="1160" y="480">}</text>
+    <text x="1160" y="500"></text>
+    <text x="1160" y="520"><tspan fill="#9cdcfe">async</tspan> <tspan fill="#dcdcaa">add</tspan>&lt;<tspan fill="#4ec9b0">TaskResultType</tspan>&gt;(...args) {</text>
+    <text x="1160" y="540">  <tspan fill="#6a9955">// queue body changed — see diff</tspan></text>
+    <text x="1160" y="560">  <tspan fill="#9cdcfe">this</tspan>.<tspan fill="#dcdcaa">emit</tspan>(<tspan fill="#ce9178">'add'</tspan>);</text>
+    <text x="1160" y="580">  ...</text>
+  </g>
+
+  <!-- Status bar -->
+  <rect x="0" y="1170" width="1920" height="30" fill="#007acc"/>
+  <g fill="#ffffff" font-size="12">
+    <text x="20" y="1190">⎇ #245 · queue.ts</text>
+    <text x="320" y="1190">PQueue.onSizeLessThan · 22 lines added</text>
+    <text x="1700" y="1190">TypeScript</text>
+    <text x="1820" y="1190">Ln 301 · Col 1</text>
+  </g>
+</svg>

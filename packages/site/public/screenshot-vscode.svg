@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1200" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">
+  <rect width="1920" height="1200" fill="#1e1e1e"/>
+
+  <!-- VS Code title bar -->
+  <rect x="0" y="0" width="1920" height="30" fill="#3c3c3c"/>
+  <text x="20" y="20" fill="#cccccc" font-size="12">callmap-host — Visual Studio Code</text>
+
+  <!-- VS Code activity bar -->
+  <rect x="0" y="30" width="48" height="1140" fill="#333333"/>
+  <g fill="#9d9d9d" font-size="20" text-anchor="middle">
+    <text x="24" y="78">⎇</text>
+    <text x="24" y="132">⌕</text>
+    <text x="24" y="186">⊟</text>
+    <text x="24" y="240">⏵</text>
+    <text x="24" y="294" fill="#ffffff">⇢</text>
+    <text x="24" y="348">⊕</text>
+  </g>
+
+  <!-- VS Code sidebar -->
+  <rect x="48" y="30" width="280" height="1140" fill="#252526"/>
+  <text x="64" y="58" fill="#9d9d9d" font-size="11" letter-spacing="0.8">CALLMAP</text>
+  <g font-size="13" fill="#cccccc">
+    <text x="68" y="86">▾ PR Explorer</text>
+    <text x="84" y="110" fill="#cccccc">  #245 async-init</text>
+    <text x="68" y="140">▾ Recent</text>
+    <text x="84" y="164" fill="#9d9d9d">  pallets/flask#6013</text>
+    <text x="84" y="186" fill="#9d9d9d">  spf13/cobra#2397</text>
+    <text x="68" y="216">▾ Bookmarks</text>
+    <text x="84" y="240" fill="#9d9d9d">  PQueue.add @ queue.ts:142</text>
+    <text x="68" y="270">▾ Languages</text>
+    <text x="84" y="294" fill="#9d9d9d">  TypeScript · 7</text>
+  </g>
+
+  <!-- Tabs row -->
+  <rect x="328" y="30" width="1592" height="36" fill="#2d2d2d"/>
+  <rect x="328" y="30" width="200" height="36" fill="#1e1e1e"/>
+  <text x="344" y="54" fill="#cccccc" font-size="12">callmap: PR #245</text>
+  <text x="496" y="54" fill="#9d9d9d" font-size="12" text-anchor="middle">×</text>
+
+  <!-- Webview area (callmap inside VS Code) -->
+  <rect x="328" y="66" width="1592" height="1078" fill="#1e1e1e"/>
+  <!-- Inner breadcrumb -->
+  <text x="348" y="92" fill="#9d9d9d" font-size="12">callmap · #245 · 5 functions</text>
+
+  <!-- Graph -->
+  <g fill="none" stroke="#555555" stroke-width="1.5">
+    <path d="M 900 220 C 900 320 1100 320 1100 400"/>
+    <path d="M 1300 220 C 1300 320 1180 320 1180 400"/>
+    <path d="M 1100 540 C 1100 640 900 640 900 720"/>
+    <path d="M 1180 540 C 1180 640 1340 640 1340 720"/>
+  </g>
+  <g>
+    <rect x="800" y="160" width="200" height="60" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa"/>
+    <text x="816" y="180" fill="#dcdcaa" font-size="9">CHANGED</text>
+    <text x="816" y="200" fill="#cccccc" font-size="13">PQueue.add</text>
+  </g>
+  <g>
+    <rect x="1200" y="160" width="200" height="60" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa"/>
+    <text x="1216" y="180" fill="#dcdcaa" font-size="9">CHANGED</text>
+    <text x="1216" y="200" fill="#cccccc" font-size="13">PQueue.onIdle</text>
+  </g>
+  <g>
+    <rect x="1020" y="400" width="240" height="110" rx="6" fill="rgba(78,201,176,0.12)" stroke="#4ec9b0" stroke-width="2"/>
+    <text x="1036" y="426" fill="#4ec9b0" font-size="10">ADDED</text>
+    <text x="1036" y="452" fill="#cccccc" font-size="14" font-weight="700">PQueue.onSizeLessThan</text>
+    <text x="1036" y="470" fill="#9d9d9d" font-size="11">queue.ts:301</text>
+    <text x="1036" y="492" fill="#9d9d9d" font-size="11">+22 · 3 callers</text>
+  </g>
+  <g>
+    <rect x="800" y="720" width="200" height="60" rx="6" fill="rgba(220,220,170,0.12)" stroke="#dcdcaa"/>
+    <text x="816" y="740" fill="#dcdcaa" font-size="9">CHANGED</text>
+    <text x="816" y="760" fill="#cccccc" font-size="13">runOptionsFlow</text>
+  </g>
+  <g>
+    <rect x="1240" y="720" width="220" height="60" rx="6" fill="rgba(244,135,113,0.12)" stroke="#f48771" stroke-dasharray="4,3"/>
+    <text x="1256" y="740" fill="#f48771" font-size="9">REMOVED</text>
+    <text x="1256" y="760" fill="#cccccc" font-size="13" opacity="0.7">PQueue.clearAll</text>
+  </g>
+
+  <!-- Command palette overlay -->
+  <rect x="660" y="80" width="600" height="36" rx="4" fill="#252526" stroke="#3c3c3c"/>
+  <text x="680" y="104" fill="#9d9d9d" font-size="13" font-family="ui-monospace,Consolas,monospace">&gt; Callmap: Open PR from URL...</text>
+
+  <!-- VS Code status bar -->
+  <rect x="0" y="1170" width="1920" height="30" fill="#007acc"/>
+  <g fill="#ffffff" font-size="12">
+    <text x="20" y="1190">⎇ main</text>
+    <text x="120" y="1190">⊕ 0 ⊝ 0</text>
+    <text x="240" y="1190">callmap · #245</text>
+    <text x="460" y="1190">5 funcs (5 ts) · 6 edges</text>
+    <text x="1700" y="1190">Ln 301, Col 1</text>
+    <text x="1820" y="1190">UTF-8</text>
+  </g>
+</svg>

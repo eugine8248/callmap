@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest a new feature or a language to prioritize.
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help me sequence the roadmap. The shortest, most concrete proposals
+        get implemented fastest.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      placeholder: When I review a PR that touches Rust files I have to fall back to `cargo callgraph` because…
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would solve it?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Parser / language support
+        - Graph rendering / layout
+        - Source panel
+        - VS Code extension
+        - Desktop shell
+        - Performance
+        - Authentication / GitHub API
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered (optional)
+    validations:
+      required: false
