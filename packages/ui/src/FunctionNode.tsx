@@ -16,18 +16,25 @@ const KIND_VAR: Record<string, string> = {
   external: "--diff-neutral",
 };
 
-// v0.5 — node data carries two extra hidden flags injected by
-// CallGraphView: `__bookmarked` (render pin overlay) and `__flashing`
-// (render brief halo after a search-hit jump).
+// v0.5 — node data carries hidden flags injected by CallGraphView:
+//   __bookmarked — render pin overlay
+//   __flashing   — render brief halo after a search-hit jump
+//   __dim        — v0.6: fade out non-neighbors when another node is selected
 interface NodeData extends ChangedFunction {
   __bookmarked?: boolean;
   __flashing?: boolean;
+  __dim?: boolean;
 }
 
 function FunctionNodeImpl({ data, selected }: NodeProps) {
   const fn = data as unknown as NodeData;
   const v = KIND_VAR[fn.kind] ?? KIND_VAR.neutral;
   const isExternal = fn.kind === "external";
+  // v0.6 — base kind-driven opacity (removed cards 0.7, external 0.55, else 1)
+  // gets multiplied by the dim factor when click-to-isolate is active. Result
+  // floors at 0.18 so the dimmed nodes are still discoverable, not invisible.
+  const baseOpacity = fn.kind === "removed" ? 0.7 : isExternal ? 0.55 : 1;
+  const opacity = fn.__dim ? Math.max(baseOpacity * 0.25, 0.18) : baseOpacity;
   const ambiguousNote =
     fn.disambiguated === false && fn.ambiguousCallees && fn.ambiguousCallees.length > 0
       ? `Ambiguous callee(s): ${fn.ambiguousCallees.join(", ")} — name-only resolution can't pick one of N functions.`
@@ -44,7 +51,7 @@ function FunctionNodeImpl({ data, selected }: NodeProps) {
 
   return (
     <div
-      className="group relative rounded-sm shadow-md transition-shadow"
+      className="group relative rounded-sm shadow-md transition-all duration-200"
       style={{
         width: 220,
         background: "var(--bg-panel)",
@@ -52,7 +59,8 @@ function FunctionNodeImpl({ data, selected }: NodeProps) {
           ? `1px dashed var(${v})`
           : `1px solid var(${v})`,
         boxShadow,
-        opacity: fn.kind === "removed" ? 0.7 : isExternal ? 0.55 : 1,
+        opacity,
+        filter: fn.__dim ? "saturate(0.4)" : undefined,
       }}
       title={ambiguousNote ?? undefined}
     >

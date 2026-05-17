@@ -110,12 +110,25 @@ function InnerGraph({
       target: e.target,
       type: "smoothstep",
       animated: false,
+      // v0.6 — tighter corner radius makes the orthogonal-ish routing read
+      // more like a flowchart than a maze. Smaller arrow head + softer
+      // default stroke = less visual noise across dense graphs.
+      pathOptions: { borderRadius: 12 },
+      markerEnd: {
+        type: "arrowclosed" as const,
+        width: 14,
+        height: 14,
+        color: "var(--xyflow-edge)",
+      },
       // v0.3: dim dashed line for unresolved-external call edges so the
       // viewer can distinguish "we found this call but the target lives
       // outside the PR" from "real edge within the changed set".
+      // v0.6: even non-external edges now ride a muted default — the
+      // click-to-isolate effect promotes the relevant ones to the accent
+      // color when a node is selected.
       style: e.external
-        ? { strokeDasharray: "4 3", opacity: 0.55 }
-        : undefined,
+        ? { stroke: "var(--xyflow-edge)", strokeWidth: 1, strokeDasharray: "4 3", opacity: 0.45 }
+        : { stroke: "var(--xyflow-edge)", strokeWidth: 1.25, opacity: 0.55 },
     }));
     return { nodes: rawNodes, edges: rawEdges };
     // bookmarkedIds is captured in data only at build time; updates flow
@@ -124,7 +137,7 @@ function InnerGraph({
   }, [graph]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes);
-  const [edges, , onEdgesChange] = useEdgesState(initial.edges);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges);
   const rf = useReactFlow();
 
   useEffect(() => {
@@ -132,8 +145,82 @@ function InnerGraph({
   }, [initial.nodes, setNodes]);
 
   useEffect(() => {
-    setNodes((ns) => ns.map((n) => ({ ...n, selected: n.id === selectedId })));
-  }, [selectedId, setNodes]);
+    setEdges(initial.edges);
+  }, [initial.edges, setEdges]);
+
+  // v0.6 — Adjacency lookup for the click-to-isolate effect. Walks the
+  // current edge list once per graph change instead of re-scanning on
+  // every render.
+  const neighborMap = useMemo(() => {
+    const m = new Map<string, Set<string>>();
+    const add = (a: string, b: string) => {
+      if (!m.has(a)) m.set(a, new Set());
+      m.get(a)!.add(b);
+    };
+    for (const e of graph.edges) {
+      add(e.source, e.target);
+      add(e.target, e.source);
+    }
+    return m;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [graph]);
+
+  // v0.6 — Click-to-isolate. With a selection, the picked node + its 1-hop
+  // neighbors render at full opacity and edges joining them get the accent
+  // stroke. Everything else fades. With no selection, base styling wins.
+  useEffect(() => {
+    const isolating = selectedId !== null;
+    const focusSet = new Set<string>();
+    if (isolating) {
+      focusSet.add(selectedId);
+      const nbrs = neighborMap.get(selectedId);
+      if (nbrs) for (const id of nbrs) focusSet.add(id);
+    }
+    setNodes((ns) =>
+      ns.map((n) => ({
+        ...n,
+        selected: n.id === selectedId,
+        data: {
+          ...(n.data as Record<string, unknown>),
+          __dim: isolating && !focusSet.has(n.id),
+        },
+      })),
+    );
+    setEdges((es) =>
+      es.map((e) => {
+        const base = initial.edges.find((b) => b.id === e.id)?.style as
+          | React.CSSProperties
+          | undefined;
+        if (!isolating) {
+          return { ...e, style: base, markerEnd: e.markerEnd, animated: false };
+        }
+        const touchesSelected = e.source === selectedId || e.target === selectedId;
+        if (touchesSelected) {
+          return {
+            ...e,
+            animated: true,
+            style: {
+              ...base,
+              stroke: "var(--accent)",
+              strokeWidth: 1.75,
+              opacity: 1,
+            },
+            markerEnd: {
+              type: "arrowclosed" as const,
+              width: 16,
+              height: 16,
+              color: "var(--accent)",
+            },
+          };
+        }
+        return {
+          ...e,
+          animated: false,
+          style: { ...base, opacity: 0.08 },
+        };
+      }),
+    );
+  }, [selectedId, neighborMap, initial.edges, setNodes, setEdges]);
 
   // v0.5 — merge bookmarked + flashing state into node.data when either changes.
   useEffect(() => {
