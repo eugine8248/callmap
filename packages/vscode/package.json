@@ -2,7 +2,7 @@
   "name": "callmap-vscode",
   "displayName": "callmap",
   "description": "PR-delta callgraph viewer for code reviewers — Visualize what a pull request actually changes.",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "private": true,
   "publisher": "callmap",
   "license": "MIT",

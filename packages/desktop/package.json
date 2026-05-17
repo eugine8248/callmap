@@ -1,6 +1,6 @@
 {
   "name": "@callmap/desktop",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "callmap Tauri desktop app — thin React shell over @callmap/ui with Tauri-backed host bindings.",

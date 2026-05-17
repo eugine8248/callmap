@@ -1,6 +1,6 @@
 {
   "name": "@callmap/ui",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "callmap React UI — IdeShell + components, reused by the desktop app and the VS Code webview.",
