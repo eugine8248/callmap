@@ -51,6 +51,21 @@ export default defineConfig({
           if (n === "main.css" || n === "index.css") return "main.css";
           return "[name][extname]";
         },
+        // v1.1.0 — Force MapGraphView + d3-force into a dedicated
+        // lazy chunk so the VS Code webview's initial main.js stays
+        // free of d3 until the user opts in to Map mode.
+        manualChunks(id: string) {
+          if (
+            id.includes("/d3-force/") ||
+            id.endsWith("/MapGraphView.tsx") ||
+            id.endsWith("/MapNode.tsx") ||
+            id.endsWith("/MapEdge.tsx") ||
+            id.endsWith("/useForceLayout.ts")
+          ) {
+            return "MapGraphView";
+          }
+          return undefined;
+        },
       },
     },
   },

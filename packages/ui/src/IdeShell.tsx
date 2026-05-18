@@ -58,7 +58,12 @@ import Codicon from "./Codicon";
 // the app. Splitting it lets the welcome pane render with a tiny
 // initial bundle (< 150 KB target). SourcePanel similarly pulls in
 // highlight.js so we lazy-load it on demand too.
-const CallGraphViewLazy = lazy(() => import("./CallGraphView"));
+//
+// v1.1.0 — Graph rendering goes through GraphModeShell, which itself
+// React.lazy-loads both CallGraphView and MapGraphView. This keeps
+// d3-force out of the initial chunk and only fetches it when the user
+// flips to Map mode for the first time.
+const GraphModeShellLazy = lazy(() => import("./GraphModeShell"));
 const SourcePanelLazy = lazy(() => import("./SourcePanel"));
 
 export interface IdeShellProps {
@@ -73,7 +78,13 @@ export interface IdeShellProps {
 }
 
 const MINIMAP_KEY = "callmap.ui.minimapVisible";
+// v1.1 — persist the current graph-rendering mode so a reload lands on
+// the same view the user chose. Values: "review" | "map" | "map3d".
+// The 3D bucket is the easter-egg path; we only return to it on reload
+// if the user explicitly enabled it.
+const VIEW_MODE_KEY = "callmap.ui.viewMode";
 const TOAST_TIMEOUT_MS = 5500;
+const GG_KEYPRESS_WINDOW_MS = 400; // v1.1.4 — "gg" sequence window
 
 interface ToastState {
   id: number;
@@ -96,6 +107,18 @@ export default function IdeShell({ host, initialUrl = null }: IdeShellProps) {
     }
   });
   const [findOpen, setFindOpen] = useState(false);
+  // v1.1 — view-mode state. We hydrate from localStorage and persist
+  // every change. The 3D bucket only survives a reload if the user
+  // explicitly chose it — see the keypress sequence further down.
+  const [viewMode, setViewMode] = useState<import("./GraphModeShell").GraphMode>(() => {
+    try {
+      const v = localStorage.getItem(VIEW_MODE_KEY);
+      if (v === "map" || v === "map3d") return v;
+    } catch {
+      /* noop */
+    }
+    return "review";
+  });
 
   // ── PR state ────────────────────────────────────────────────────
   const [currentUrl, setCurrentUrl] = useState<string | null>(initialUrl);
@@ -138,6 +161,15 @@ export default function IdeShell({ host, initialUrl = null }: IdeShellProps) {
       /* noop */
     }
   }, [minimapVisible]);
+
+  // ── v1.1 — Persist view-mode preference ─────────────────────────
+  useEffect(() => {
+    try {
+      localStorage.setItem(VIEW_MODE_KEY, viewMode);
+    } catch {
+      /* noop */
+    }
+  }, [viewMode]);
 
   // ── Deep-link bootstrap ─────────────────────────────────────────
   // Desktop: v0.1 bookmarks live as /graph?url=… and arrive here via
@@ -249,6 +281,13 @@ export default function IdeShell({ host, initialUrl = null }: IdeShellProps) {
       { id: "theme.toggle", title: "Toggle Theme (Dark / Light)", icon: "sun" },
       { id: "legend.toggle", title: "Show / Hide Legend", icon: "info" },
       { id: "minimap.toggle", title: "View: Toggle Minimap", icon: "map" },
+      // v1.1 — Map view entries. We expose three palette commands:
+      // the toggle (the muscle-memory entry), plus the two explicit
+      // "switch to X" so users can land on either mode without
+      // having to guess what the current mode is.
+      { id: "viewMode.toggle", title: "View: Toggle Map", icon: "network" },
+      { id: "viewMode.map", title: "View: Switch to Map mode", icon: "network" },
+      { id: "viewMode.review", title: "View: Switch to Review mode", icon: "callmap-logo" },
       { id: "search.openInGraph", title: "Find in Graph…", icon: "search" },
       { id: "bookmarks.show", title: "Show Bookmarks Pane", icon: "bookmark" },
       { id: "recent.clear", title: "Clear Recent PRs", icon: "trash" },
@@ -286,6 +325,17 @@ export default function IdeShell({ host, initialUrl = null }: IdeShellProps) {
           return;
         case "minimap.toggle":
           setMinimapVisible((m) => !m);
+          return;
+        case "viewMode.toggle":
+          // The toggle hop is binary between Review and Map; the 3D
+          // bucket is reachable only through the gg easter egg.
+          setViewMode((m) => (m === "review" ? "map" : "review"));
+          return;
+        case "viewMode.review":
+          setViewMode("review");
+          return;
+        case "viewMode.map":
+          setViewMode("map");
           return;
         case "search.openInGraph":
           if (graph && graph.functions.length > 0) {
@@ -355,6 +405,7 @@ export default function IdeShell({ host, initialUrl = null }: IdeShellProps) {
         "sidebar.toggle",
         "minimap.toggle",
         "search.openInGraph",
+        "viewMode.toggle",
       ] as const) {
         const s = KEYMAP[id];
         if (s && matchShortcut(e, s)) {
@@ -378,6 +429,47 @@ export default function IdeShell({ host, initialUrl = null }: IdeShellProps) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [paletteMode, selected, contextMenu, findOpen, graph, runCommand]);
+
+  // ── v1.1.4 — gg easter egg ──────────────────────────────────────
+  // Press 'g' twice within 400ms while in Map mode to flip to the 3D
+  // view (loaded behind a dynamic import). A second `gg` returns to
+  // 2D. We track the timestamp of the previous 'g' in a ref so we
+  // don't spam re-renders. Skipped while the palette / find widget /
+  // any text input is focused so the sequence doesn't fight with
+  // normal typing.
+  const lastGRef = useRef<number>(0);
+  useEffect(() => {
+    function onG(e: KeyboardEvent) {
+      if (e.key !== "g" || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) {
+        lastGRef.current = 0;
+        return;
+      }
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        (target as HTMLElement | null)?.isContentEditable ||
+        target?.closest("[data-palette]") ||
+        target?.closest("[data-find-widget]")
+      ) {
+        lastGRef.current = 0;
+        return;
+      }
+      // Easter egg only active when we're already in Map mode (2D
+      // or 3D). From Review mode 'g' is a no-op so the user doesn't
+      // get a surprise transition from the typing-on-canvas reflex.
+      if (viewMode === "review") return;
+      const now = performance.now();
+      if (now - lastGRef.current < GG_KEYPRESS_WINDOW_MS) {
+        lastGRef.current = 0;
+        setViewMode((m) => (m === "map3d" ? "map" : "map3d"));
+      } else {
+        lastGRef.current = now;
+      }
+    }
+    window.addEventListener("keydown", onG);
+    return () => window.removeEventListener("keydown", onG);
+  }, [viewMode]);
 
   // ── Sidebar callbacks ───────────────────────────────────────────
   function onSelectActivity(v: ActivityView) {
@@ -560,8 +652,9 @@ export default function IdeShell({ host, initialUrl = null }: IdeShellProps) {
               )}
               {hasContent && (
                 <Suspense fallback={<GraphChunkLoader />}>
-                  <CallGraphViewLazy
-                    ref={graphRef}
+                  <GraphModeShellLazy
+                    mode={viewMode}
+                    reviewRef={graphRef}
                     graph={filteredGraph!}
                     selectedId={selected?.id ?? null}
                     onSelect={(fn) => {
@@ -615,6 +708,8 @@ export default function IdeShell({ host, initialUrl = null }: IdeShellProps) {
         } : null}
         minimapVisible={minimapVisible}
         onToggleMinimap={() => runCommand("minimap.toggle")}
+        viewMode={viewMode}
+        onToggleViewMode={() => runCommand("viewMode.toggle")}
       />
 
       {paletteMode && (

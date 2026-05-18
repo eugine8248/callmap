@@ -15,6 +15,9 @@ interface Props {
   /** v0.5 — minimap visibility toggle (status-bar entry on the right). */
   minimapVisible: boolean;
   onToggleMinimap: () => void;
+  /** v1.1 — current graph view mode (Review / Map / Map 3D). */
+  viewMode: "review" | "map" | "map3d";
+  onToggleViewMode: () => void;
 }
 
 export default function StatusBar({
@@ -25,6 +28,8 @@ export default function StatusBar({
   onBackHome,
   minimapVisible,
   onToggleMinimap,
+  viewMode,
+  onToggleViewMode,
 }: Props) {
   const warn = !!rate && rate.remaining < 100;
   return (
@@ -68,6 +73,28 @@ export default function StatusBar({
       </div>
 
       <div className="flex items-center gap-3">
+        {graph && (
+          <button
+            onClick={onToggleViewMode}
+            className="flex items-center gap-1 hover:opacity-80"
+            data-tooltip={
+              viewMode === "review"
+                ? "Switch to Map view (Ctrl+Shift+G)"
+                : viewMode === "map"
+                  ? "Switch to Review view (Ctrl+Shift+G)"
+                  : "3D map (gg toggles)"
+            }
+            aria-label="Toggle graph view mode"
+          >
+            <Codicon
+              name={viewMode === "review" ? "callmap-logo" : viewMode === "map3d" ? "globe" : "network"}
+              size={12}
+            />
+            <span>
+              {viewMode === "review" ? "Review" : viewMode === "map3d" ? "Map · 3D" : "Map"}
+            </span>
+          </button>
+        )}
         {graph && (
           <button
             onClick={onToggleMinimap}

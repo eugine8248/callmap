@@ -42,7 +42,11 @@ export type CodiconName =
   | "file-go"
   | "file-ts"
   | "file-js"
-  | "callmap-logo";
+  | "callmap-logo"
+  // v1.1 — Map view affordances
+  | "network"
+  | "globe"
+  | "eye";
 
 interface Props extends Omit<SVGProps<SVGSVGElement>, "name"> {
   name: CodiconName;
@@ -262,6 +266,32 @@ const paths: Record<CodiconName, JSX.Element> = {
       <path d="M4 2h5l3 3v9H4z" fill="none" />
       <path d="M9 2v3h3" />
       <text x="8" y="12" textAnchor="middle" fontSize="5" fill="currentColor" stroke="none" fontFamily="monospace">js</text>
+    </>
+  ),
+  // v1.1 — Map view ("Network" icon — three nodes connected by edges,
+  // distinctly different from the "callmap-logo" two-node mark used
+  // for the app brand).
+  network: (
+    <>
+      <circle cx="3" cy="3.5" r="1.6" />
+      <circle cx="13" cy="3.5" r="1.6" />
+      <circle cx="8" cy="12" r="1.6" />
+      <path d="M4.4 4.3l2.7 6.4M11.6 4.3l-2.7 6.4M4.6 3.5h6.8" />
+    </>
+  ),
+  // v1.1 — 3D / globe glyph for the easter-egg pill (post-`gg`).
+  globe: (
+    <>
+      <circle cx="8" cy="8" r="6" />
+      <ellipse cx="8" cy="8" rx="3" ry="6" />
+      <path d="M2 8h12" />
+    </>
+  ),
+  // v1.1 — generic "view" glyph for the status-bar mode pill.
+  eye: (
+    <>
+      <path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" />
+      <circle cx="8" cy="8" r="2" />
     </>
   ),
 };

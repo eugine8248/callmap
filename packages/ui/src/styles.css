@@ -258,6 +258,132 @@ body {
   background: var(--accent);
 }
 
+/* ────────────────────────────────────────────────────────────────────
+   v1.1 — Map view (Obsidian-style force-directed graph) styling.
+
+   We define everything in one place so the React components stay
+   declarative. Three categories:
+     1. Node + edge static styling
+     2. Animations (breathing / hover halo / throb / settle / ripple)
+     3. prefers-reduced-motion fallback that flattens (1) and (2)
+   ──────────────────────────────────────────────────────────────────── */
+
+.map-cluster path {
+  transition: opacity 250ms ease-out;
+}
+
+.map-edge {
+  pointer-events: none;
+}
+
+.map-node {
+  pointer-events: auto;
+}
+.map-node__orb {
+  transform-origin: center;
+  transform-box: fill-box;
+  transition: filter 200ms ease-out;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+.map-node__ring {
+  pointer-events: none;
+}
+.map-node__hover-halo {
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(6px);
+  transition: opacity 150ms ease-out;
+}
+.map-node__throb {
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(8px);
+}
+.map-node__label {
+  user-select: none;
+  paint-order: stroke fill;
+  stroke: var(--bg-editor);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  transition: opacity 150ms ease-out;
+}
+
+/* Hover halo turns on for any orb in the hovered group. */
+.map-node:hover .map-node__hover-halo {
+  opacity: 0.6;
+}
+.map-node:hover .map-node__label {
+  opacity: 1 !important;
+}
+
+/* ── Animations (v1.1.1+) ──
+   Each animation is opt-in via the .map-node--anim class which the
+   React component drops when prefers-reduced-motion fires. */
+
+@keyframes map-node-breath {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+.map-node--anim .map-node__orb {
+  animation: map-node-breath 3s ease-in-out infinite;
+  animation-delay: var(--breathing-delay, 0s);
+}
+
+/* Settle entrance — orbs spawn at the centroid and the simulation
+   drifts them out. We layer a one-shot scale-in so the visual reads
+   as "materializing", not just "popping". */
+@keyframes map-node-settle {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.map-node--anim.map-node--settle .map-node__orb {
+  animation:
+    map-node-breath 3s ease-in-out infinite,
+    map-node-settle 700ms ease-out 1;
+  animation-delay: var(--breathing-delay, 0s), 0s;
+}
+
+/* Selected-node throb — 2s sine sweep on the throb glow circle. */
+@keyframes map-node-throb {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.8; }
+}
+.map-node--anim.map-node--selected .map-node__throb {
+  animation: map-node-throb 2s ease-in-out infinite;
+}
+
+/* Click ripple — appended as a sibling <circle> by MapNode at click
+   time. The Web Animations API drives radius + opacity; this CSS only
+   styles it. */
+.map-node__ripple {
+  pointer-events: none;
+  fill: var(--map-node-color, var(--accent));
+  opacity: 0;
+}
+
+/* Particle flow (v1.1.2) — small white dots traveling each edge. */
+.map-edge-particle {
+  fill: rgba(255, 255, 255, 0.85);
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.6));
+  pointer-events: none;
+}
+
+/* prefers-reduced-motion — flatten every animation in this stylesheet
+   that the Map view introduces. The runtime hook also gates the React
+   class wiring but this is a belt-and-braces guarantee. */
+@media (prefers-reduced-motion: reduce) {
+  .map-node--anim .map-node__orb,
+  .map-node--anim.map-node--settle .map-node__orb,
+  .map-node--anim.map-node--selected .map-node__throb {
+    animation: none !important;
+  }
+  .map-node__hover-halo,
+  .map-node__label,
+  .map-cluster path {
+    transition-duration: 0s !important;
+  }
+}
+
 /* ── highlight.js — v0.3 source-panel syntax colors ─────────────────
    A minimal hand-rolled theme that respects the existing diff palette
    instead of pulling a full hljs CSS file (which would add 4-6 KB just

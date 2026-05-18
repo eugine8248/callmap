@@ -62,7 +62,11 @@ export type CommandId =
   // v0.5
   | "search.openInGraph"
   | "minimap.toggle"
-  | "bookmarks.show";
+  | "bookmarks.show"
+  // v1.1 — Map view
+  | "viewMode.toggle"
+  | "viewMode.review"
+  | "viewMode.map";
 
 export const KEYMAP: Record<CommandId, Shortcut | undefined> = {
   "palette.open": { key: "p", mods: ["Ctrl", "Shift"] },
@@ -83,4 +87,11 @@ export const KEYMAP: Record<CommandId, Shortcut | undefined> = {
   "search.openInGraph": { key: "f", mods: ["Ctrl"] },
   "minimap.toggle": { key: "m", mods: ["Ctrl", "Shift"] },
   "bookmarks.show": undefined,
+  // v1.1 — Toggle between Review (xyflow) and Map (force-directed)
+  // graph renderers. Ctrl+Shift+G is unbound in VS Code and Cursor so
+  // we won't clash with editor commands. The split "go to review" /
+  // "go to map" entries live in the palette but share no shortcut.
+  "viewMode.toggle": { key: "g", mods: ["Ctrl", "Shift"] },
+  "viewMode.review": undefined,
+  "viewMode.map": undefined,
 };

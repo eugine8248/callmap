@@ -19,7 +19,15 @@ export { default as Breadcrumbs } from "./Breadcrumbs";
 // re-exporting them would pin xyflow + highlight.js into the initial
 // bundle, defeating the code split. Downstream code that wants the
 // components directly can deep-import them at "./CallGraphView" etc.
+//
+// v1.1.0 — MapGraphView + GraphModeShell follow the same convention.
+// Re-exporting their default would drag d3-force into the initial
+// chunk. We only export their TS types so the shell and callers can
+// reference the prop shape statically.
 export type { CallGraphViewHandle } from "./CallGraphView";
+export type { GraphMode, GraphModeShellProps } from "./GraphModeShell";
+export type { MapGraphViewHandle } from "./MapGraphView";
+export { DEFAULT_PARTICLES_PER_EDGE } from "./MapGraphView";
 export { default as Codicon } from "./Codicon";
 export type { CodiconName } from "./Codicon";
 export { default as CommandPalette } from "./CommandPalette";

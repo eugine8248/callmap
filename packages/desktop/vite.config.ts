@@ -33,6 +33,30 @@ export default defineConfig({
     // about — initial chunk under 300 KB gzip — are tracked in
     // AUTOMATION_LOG.md.
     chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        // v1.1.0 — Force MapGraphView (and its d3-force dep) into a
+        // dedicated lazy chunk. The default Rollup heuristic inlines
+        // a small lazy module when only one importer references it
+        // through React.lazy, which would pull d3-force into the
+        // initial bundle. The id-based manualChunks below splits any
+        // module whose path mentions the Map graph stack OR d3-force
+        // into a single `MapGraphView` chunk that's only fetched when
+        // the user flips to Map mode.
+        manualChunks(id: string) {
+          if (
+            id.includes("/d3-force/") ||
+            id.endsWith("/MapGraphView.tsx") ||
+            id.endsWith("/MapNode.tsx") ||
+            id.endsWith("/MapEdge.tsx") ||
+            id.endsWith("/useForceLayout.ts")
+          ) {
+            return "MapGraphView";
+          }
+          return undefined;
+        },
+      },
+    },
   },
   // Don't pre-bundle web-tree-sitter — it needs to load its own WASM at runtime
   optimizeDeps: {
