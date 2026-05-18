@@ -32,7 +32,11 @@ export default defineConfig({
     // false-alarm warning at every build. The numbers we actually care
     // about — initial chunk under 300 KB gzip — are tracked in
     // AUTOMATION_LOG.md.
-    chunkSizeWarningLimit: 600,
+    // v1.1.4 — Map3DView (three.js + react-force-graph-3d + d3-force-3d)
+    // is intentionally 1.3 MB raw / 368 KB gzip. The chunk only loads
+    // after the `gg` easter egg, so we raise the warning to 1500 KB
+    // and document the size in V11_REPORT.md.
+    chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
         // v1.1.0 — Force MapGraphView (and its d3-force dep) into a
@@ -52,6 +56,21 @@ export default defineConfig({
             id.endsWith("/useForceLayout.ts")
           ) {
             return "MapGraphView";
+          }
+          // v1.1.4 — 3D map chunk. three.js (+ examples), d3-force-3d,
+          // react-force-graph-3d, and three-render-objects all live
+          // here so they're only fetched after the `gg` easter egg.
+          if (
+            id.endsWith("/Map3DView.tsx") ||
+            id.includes("/three/") ||
+            id.includes("/three-") ||
+            id.includes("/d3-force-3d/") ||
+            id.includes("/react-force-graph") ||
+            id.includes("/d3-quadtree/") ||
+            id.includes("/d3-binarytree/") ||
+            id.includes("/d3-octree/")
+          ) {
+            return "Map3DView";
           }
           return undefined;
         },

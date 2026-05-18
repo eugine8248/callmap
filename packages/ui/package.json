@@ -1,6 +1,6 @@
 {
   "name": "@callmap/ui",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "callmap React UI — IdeShell + components, reused by the desktop app and the VS Code webview.",
@@ -15,10 +15,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@callmap/core": "1.0.0",
+    "@callmap/core": "1.1.0",
     "@xyflow/react": "^12.3.5",
     "d3-force": "^3.0.0",
-    "highlight.js": "^11.11.1"
+    "highlight.js": "^11.11.1",
+    "react-force-graph-3d": "^1.29.1"
   },
   "peerDependencies": {
     "react": "^18.3.1",

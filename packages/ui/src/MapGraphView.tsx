@@ -26,7 +26,8 @@ import {
   useState,
 } from "react";
 import type { CallGraphResult, ChangedFunction } from "@callmap/core";
-import MapNode, { mapNodeRadius } from "./MapNode";
+import MapNode from "./MapNode";
+import { mapNodeRadius } from "./mapConstants";
 import MapEdge from "./MapEdge";
 import { useForceLayout, type ForceNodeInput, type ForceLinkInput } from "./useForceLayout";
 import { useReducedMotion } from "./useReducedMotion";
@@ -52,10 +53,12 @@ interface Props {
   reducedMotion?: boolean;
 }
 
-// v1.1.2 — Hardcoded default for the per-edge particle count. Bumping
-// this everywhere in callmap is a single-source-of-truth edit. We
-// re-export so the desktop README and the V11_REPORT can reference it.
-export const DEFAULT_PARTICLES_PER_EDGE = 3;
+// v1.1.2 — The per-edge particle count is now defined in
+// ./mapConstants so both the 2D and 3D Map views can share it without
+// dragging each other into the same Rollup chunk. Re-exported here so
+// existing callers (the index barrel) keep working.
+export { DEFAULT_PARTICLES_PER_EDGE } from "./mapConstants";
+import { DEFAULT_PARTICLES_PER_EDGE as PARTICLES_PER_EDGE } from "./mapConstants";
 const PARTICLE_DURATION_MS = 4000;
 const PARTICLE_HOVER_DURATION_MS = 2000;
 const SETTLE_SKIP_THRESHOLD = 150;
@@ -538,7 +541,7 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
   // Hover (either endpoint) drops the duration from 4000 → 2000ms.
   const edgeRender = useMemo(() => {
     const isolating = selectedId !== null;
-    const particleBase = reducedMotion ? 0 : DEFAULT_PARTICLES_PER_EDGE;
+    const particleBase = reducedMotion ? 0 : PARTICLES_PER_EDGE;
     return graph.edges.map((e, i) => {
       const sp = positions.get(e.source);
       const tp = positions.get(e.target);

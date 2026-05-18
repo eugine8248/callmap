@@ -64,6 +64,18 @@ export default defineConfig({
           ) {
             return "MapGraphView";
           }
+          if (
+            id.endsWith("/Map3DView.tsx") ||
+            id.includes("/three/") ||
+            id.includes("/three-") ||
+            id.includes("/d3-force-3d/") ||
+            id.includes("/react-force-graph") ||
+            id.includes("/d3-quadtree/") ||
+            id.includes("/d3-binarytree/") ||
+            id.includes("/d3-octree/")
+          ) {
+            return "Map3DView";
+          }
           return undefined;
         },
       },

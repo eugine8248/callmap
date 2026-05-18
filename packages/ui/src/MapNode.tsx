@@ -8,30 +8,17 @@
 
 import { memo } from "react";
 import type { ChangedFunction } from "@callmap/core";
+import { mapNodeRadius, mapNodeColorVar } from "./mapConstants";
 
-export const MAP_NODE_BASE_RADIUS = 12;
-export const MAP_NODE_RADIUS_STEP = 2;
-export const MAP_NODE_RADIUS_CAP = 32;
-
-export function mapNodeRadius(degree: number): number {
-  return Math.min(
-    MAP_NODE_RADIUS_CAP,
-    MAP_NODE_BASE_RADIUS + degree * MAP_NODE_RADIUS_STEP,
-  );
-}
-
-const KIND_VAR: Record<string, string> = {
-  added: "--diff-added",
-  removed: "--diff-removed",
-  changed: "--diff-changed",
-  unchanged: "--diff-neutral",
-  neutral: "--diff-neutral",
-  external: "--diff-neutral",
-};
-
-export function mapNodeColorVar(kind: string): string {
-  return KIND_VAR[kind] ?? KIND_VAR.neutral;
-}
+// Re-export so existing imports `import { mapNodeRadius } from
+// "./MapNode"` keep working in MapGraphView.tsx without a sweep.
+export {
+  mapNodeRadius,
+  mapNodeColorVar,
+  MAP_NODE_BASE_RADIUS,
+  MAP_NODE_RADIUS_STEP,
+  MAP_NODE_RADIUS_CAP,
+} from "./mapConstants";
 
 interface Props {
   fn: ChangedFunction;

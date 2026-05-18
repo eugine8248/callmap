@@ -7,7 +7,7 @@
 // them via a quadratic control point would obscure cluster hulls.
 
 import { memo } from "react";
-import { mapNodeColorVar } from "./MapNode";
+import { mapNodeColorVar } from "./mapConstants";
 
 interface Props {
   id: string;

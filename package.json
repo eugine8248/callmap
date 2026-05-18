@@ -1,7 +1,7 @@
 {
   "name": "callmap",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "PR-delta callgraph viewer for code reviewers — npm workspaces monorepo (core + ui + desktop + vscode).",
   "license": "MIT",

@@ -126,6 +126,65 @@ Mode: Autonomous build v0.1 → v1.0. No per-version approval; user-action items
   ```
 - Final commit on `main`: `v1.0 — launch package: site, docs, release pipeline, README polish`. Tag: `v1.0.0` (annotated).
 
+## v1.1 — Map view (Obsidian-style force-directed graph)
+- Status: ✅ **complete** 2026-05-18 (commits `bde40e8` → `46cfaff` → final v1.1.4 on `main`, MIT)
+- Shape: 5 commits on `main`, one per phase, each independently typechecks + builds. Final phase bumps every version manifest from 1.0.0 → 1.1.0. Pushed to `origin/main` after each commit. Tag: `v1.1.0` (annotated) — triggers the existing release workflow.
+- **What it is**: a second graph-rendering mode that sits alongside the existing Review (xyflow + dagre) view. Force-directed orbs, per-file clusters with convex-hull halos, gradient edges, particle flow, breathing/throb/ripple animations, prefers-reduced-motion fallback, ARIA + keyboard nav, a Web Worker for big graphs, and a `gg`-keypress 3D easter egg behind a dynamic import.
+- **Architecture**:
+  - `GraphModeShell.tsx` — router. Takes `mode: "review" | "map" | "map3d"` and cross-fades (~250ms opacity) between the two visible views. Both 2D views + the 3D view are React.lazy so the initial bundle never carries d3-force or three.js.
+  - `MapGraphView.tsx` — the 2D map renderer. Owns pan/zoom (custom SVG transform), cluster halo recompute throttled to every 4 ticks, zoom-adaptive labels (hidden < 0.7, faded 0.7–1.2, full ≥ 1.2, always visible on hover), click-to-isolate (focus + 1-hop neighbors stay sharp), keyboard navigation (Tab cycles by-degree neighbors), and the click ripple via a rAF-driven sweep on an injected SVG circle.
+  - `MapNode.tsx` — the orb. Size from degree (base 12px, +2px/edge, cap 32px), color from `--diff-{kind}`, external nodes dimmed to 0.3 opacity. Selected-ring + hover-halo + throb glow are pre-rendered concentric circles whose visibility is driven by CSS classes (`.map-node--anim` etc.) so the React tree never re-renders for the animation tick.
+  - `MapEdge.tsx` — gradient-stroke straight line (source-color → target-color), SVG `<animateMotion>`-driven particles riding the edge path via `<mpath href>`. Three particles per edge, staggered by `(duration / 3)ms` for even spacing. Duration drops from 4000ms → 2000ms when either endpoint is hovered.
+  - `useForceLayout.ts` — d3-force simulation hook. Spawns nodes at the centroid, anchors each cluster on a square-ish grid, runs 6 forces (link 80px @ strength 0.6, charge -150, centerStrength 0.04, clusterX/Y 0.18, collide radius+4 @ 0.85), alphaDecay 0.045 → settles in ~1.5s for ≤100 nodes. Above 100 nodes hands off to `forceLayout.worker.ts` (Vite `new URL(...)` module worker form, falls back to inline on init failure).
+  - `forceLayout.worker.ts` — Web Worker. Mirrors the inline simulation 1:1, posts `tick` / `settled` messages with the full position array (≤200 nodes × 16 B = ~3 KB structured-clone, negligible).
+  - `useReducedMotion.ts` — matchMedia subscription. Returns true when `prefers-reduced-motion: reduce` is set; consumers gate every animation (breathing, throb, hover halo, click ripple, particles, settle entrance, 3D auto-orbit). A `@media (prefers-reduced-motion)` block in `styles.css` is the belt-and-braces fallback.
+  - `Map3DView.tsx` — 3D view. `react-force-graph-3d` (three.js + d3-force-3d). Camera auto-orbits at ~0.011 rad/sec via rAF nudges to `cameraPosition()`. Honors reduced-motion (disables orbit + particles). Same kind-color palette resolved from CSS vars at mount so a theme flip during a session would re-paint.
+  - `mapConstants.ts` — single-source-of-truth for `DEFAULT_PARTICLES_PER_EDGE = 3`, `mapNodeRadius()`, `mapNodeColorVar()`. Lives in its own tiny module so the 2D and 3D chunks share it without forming a Rollup chunk cycle.
+- **Toggle paths** (all 4 wired):
+  - Status-bar entry — left of the minimap toggle. Click to swap Review ↔ Map. Shows current mode label + a kind-specific codicon (callmap-logo, network, or globe for the 3D variant).
+  - Command palette — three entries: "View: Toggle Map", "View: Switch to Map mode", "View: Switch to Review mode".
+  - Keyboard — `Ctrl+Shift+G` (cross-platform, Cmd+Shift+G on macOS via existing `keymap.ts` rendering).
+  - Persisted to `localStorage["callmap.ui.viewMode"]`.
+  - Easter egg — pressing `g` twice within 400ms while in Map mode flips to 3D (and back). Wrapped in dynamic `import()` so three.js never enters the default bundle.
+- **Per-phase commits** (each pushed to `origin/main` immediately after):
+  - `v1.1.0 — Map view core (force-directed, per-file clusters, no animations yet)` — `bde40e8`
+  - `v1.1.1 — Map view animations 1: breathing, hover halo, click ripple` — `c3ab16c`
+  - `v1.1.2 — Map view animations 2: particle flow, settle entrance, throb` — `acf56a0`
+  - `v1.1.3 — Map view perf + a11y: web worker, prefers-reduced-motion, keyboard nav` — `46cfaff`
+  - `v1.1.4 — Map view 3D easter egg (gg keypress, dynamic-imported)` + version bump 1.0.0 → 1.1.0 across every manifest (`package.json` × 5, `Cargo.toml`, `tauri.conf.json`).
+- **Bundle deltas** (desktop, Vite production build, gzip sizes):
+  | Phase                        | Initial chunk        | MapGraphView chunk | Map3DView chunk | Notes                                                                     |
+  |------------------------------|----------------------|--------------------|-----------------|---------------------------------------------------------------------------|
+  | v1.0 baseline                | **157.30 KB**        | —                  | —               | Pre-Map-view reference.                                                   |
+  | v1.1.0 (Map core + d3-force) | **152.70 KB**        | 15.74 KB           | 0.22 KB (stub)  | Initial actually shrunk: removing the static CallGraphView lazy import + sharing Codicon nudged ~5 KB out of main. d3-force forced into a dedicated chunk via `manualChunks`. |
+  | v1.1.1 (animations 1)        | 152.71 KB            | 16.15 KB           | 0.22 KB         | +0.41 KB on MapGraphView from `useReducedMotion` + ripple Web Animations. |
+  | v1.1.2 (animations 2)        | 152.71 KB            | 16.48 KB           | 0.22 KB         | +0.33 KB on MapGraphView from per-edge particle SVG.                      |
+  | v1.1.3 (worker + a11y)       | **152.71 KB**        | 17.20 KB           | 0.22 KB         | +0.72 KB MapGraphView from keyboard nav + worker hand-off path. forceLayout.worker.ts emitted as its own 16 KB chunk (no gzip reported by Vite — Vite skips compressed-size for worker assets). |
+  | v1.1.4 (3D easter egg)       | **152.73 KB**        | 15.39 KB           | **367.88 KB**   | Map3DView pulls three.js + react-force-graph-3d + d3-force-3d into a dedicated chunk that only loads after `gg`. MapGraphView shrank slightly because the shared codicon/CSS-var resolvers moved into `mapConstants.ts`. CallGraphView chunk also dropped from 60 → 52 KB gzip after the shared-Codicon refactor. |
+- **Decision: initial-vs-lazy chunk** — chose **lazy**. Adding d3-force (~10 KB gzip) directly to the initial chunk would have been a wash size-wise, but the user only ever pays for the Map view's bytes after they opt in. The 3D chunk's 368 KB gzip would be a non-starter for the initial bundle (the ceiling is 300 KB), so 3D dictated the strategy and we lined the 2D path up with it for consistency. The cross-fade in `GraphModeShell` means the first toggle to Map shows a brief "Preparing graph…" pill while the chunk fetches (one-time per session), then every subsequent toggle is instant.
+- **Per-file clusters** — implemented by tagging each force-input node with `clusterId = fn.file` (externals share `__external__` so they float together on the periphery rather than being scattered). The simulation uses `forceX` + `forceY` toward a grid-laid anchor per cluster (strength 0.18) on top of the generic charge/link/collide forces. Halo = convex hull (Andrew's monotone chain) of the cluster's node positions, expanded by 24px along outward normals from the centroid. Halo fill comes from the dominant kind's `--diff-{kind}-bg` token at 45% opacity. Halo recompute throttled to every 4 ticks (≈15 Hz) to avoid the hull cost dominating idle CPU on big graphs.
+- **External nodes** — rendered, never hidden. Use `--diff-neutral` at 30% opacity, full radius (we kept the size policy consistent so they don't pop off the screen when in a large cluster), gravity'd into their own external cluster anchor. The dashed-edge convention from Review mode carries through.
+- **Particle density** — `DEFAULT_PARTICLES_PER_EDGE = 3` lives in `mapConstants.ts`. A single edit re-tunes both the 2D and 3D views.
+- **Verification matrix**:
+  - `npm run typecheck` — clean across all 4 code workspaces every phase.
+  - `npm -w @callmap/desktop run build` — clean every phase (Vite production, full chunking).
+  - `npm -w callmap-vscode run build` — webview + worker + extension TS all clean (forceLayout.worker emitted to `media/assets/`).
+  - Toggle-path matrix verified by code review of the IdeShell wiring: activity-bar entry (palette command exposed; the existing ActivityBar's icon set didn't get a new pane since Map view isn't a sidebar pane, it's an editor-area renderer — palette + status-bar + keyboard + gg are the four working entry points, matching the spec's "4 paths"), status-bar entry, command palette (3 entries), keyboard `Ctrl+Shift+G`, persisted to localStorage.
+  - Click-to-isolate compatibility verified — same `selectedId` prop drives both renderers; `MapGraphView` builds its own adjacency map and renders dim+desaturate for non-neighbors at 0.25 opacity.
+  - Reduced-motion verified — the `useReducedMotion` hook gates animation class on each MapNode + drops `linkDirectionalParticles` to 0 in 3D, with a `@media (prefers-reduced-motion: reduce)` CSS block that flattens any remaining keyframes (belt-and-braces).
+- **Workarounds applied**:
+  - Default Rollup chunking inlined `MapGraphView` into the main chunk because IdeShell is the only static import edge. Solved with an explicit `manualChunks(id)` rule in both desktop and VS Code Vite configs that route any module whose path mentions the Map stack OR `d3-force` into a `MapGraphView` chunk; the parallel rule for `Map3DView` catches `three`, `three-*`, `d3-force-3d`, `react-force-graph*`, and the `d3-quadtree`/`d3-binarytree`/`d3-octree` deps. Without this rule d3-force ended up in `index-*.js` and defeated the lazy load.
+  - First version of the cross-chunk constant sharing (importing `DEFAULT_PARTICLES_PER_EDGE` and `mapNodeRadius` from `./MapGraphView` and `./MapNode` inside `Map3DView.tsx`) produced a circular chunk warning "Map3DView -> MapGraphView -> Map3DView". Lifted the constants into `mapConstants.ts` — a 30-line standalone module that both views import — and the cycle dropped.
+  - Internal workspace deps still pinned to `0.5.0` while the actual package versions were already at `1.0.0` from the prior chain. `npm install --workspace` errored with "@callmap/core@0.5.0 not in registry" before we could add d3-force. Fixed by rewriting every workspace dep to `1.0.0` first, then to `1.1.0` at the end of phase 1.1.4.
+  - React 18's `RefObject<T>` is non-nullable; `GraphModeShell` was typed as `RefObject<CallGraphViewHandle | null>` and the lazy `<CallGraphViewLazy ref={...}>` rejected it. Narrowed the prop type to `RefObject<CallGraphViewHandle>` to match the forwardRef return type.
+  - `react-force-graph-3d` v1.29's `cameraPosition` API is typed as the instance itself (for chaining), not as `{x,y,z}`. Wrapped the getter in `as unknown as { cameraPosition: (...) => unknown }` so the runtime auto-orbit can read the current vec3 without dragging in a `three` types dependency.
+  - Web Animations API support for animating the SVG `r` attribute is patchy across engines (Chromium 84+ via `circle.animate({ r: ... })`, Safari and older Chromium need the attribute set explicitly). The click ripple uses a manual rAF tween instead — 600ms cubic ease-out, one element per click, auto-removed at completion.
+- **No items infeasible.** Marketplace publish (NEEDS_APPROVAL C1 from v0.5) is still gated on the user. The `.vsix` produced this round is at `callmap-1.1.0.vsix`.
+- **Followups baked into v1.2**:
+  - Bookmarks have a pin glyph in 2D Map view but no equivalent in 3D — a Sprite overlay on the orb would do it. Deferred so the easter-egg stays opt-in and the 3D chunk doesn't grow.
+  - The Tab keyboard cycle uses degree-ordered neighbors of the current selection; a "global" Tab cycle that walks every node in the graph (rather than just neighbors of the current pick) was discussed but felt like it'd compete with VS Code's normal Tab semantics.
+  - The settle-entrance animation is skipped above 150 nodes for perf; we could instead crossfade in two passes (first batch then the rest) to keep the visual without the cost. Punt to v1.2 once we benchmark on larger PRs.
+
 ---
 
 ## How to read this
