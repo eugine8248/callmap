@@ -368,6 +368,22 @@ body {
   pointer-events: none;
 }
 
+/* v1.2 — Visually-hidden aria-live region in GraphModeShell. Mirrors
+   the standard sr-only pattern from WCAG techniques (H102). Position
+   absolute + 1×1 clip keeps screen readers happy while staying off-
+   screen for sighted users. */
+.map-aria-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* prefers-reduced-motion — flatten every animation in this stylesheet
    that the Map view introduces. The runtime hook also gates the React
    class wiring but this is a belt-and-braces guarantee. */

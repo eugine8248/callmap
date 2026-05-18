@@ -1,6 +1,6 @@
 [package]
 name = "callmap"
-version = "1.1.0"
+version = "1.2.0"
 description = "PR-delta callgraph viewer for code reviewers"
 authors = ["callmap contributors"]
 license = "MIT"

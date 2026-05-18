@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%F0%9F%92%9C-d4347c)](https://github.com/sponsors/eugine8248)
 [![VS Code installs](https://img.shields.io/badge/VS%20Code-install-007ACC?logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=callmap.callmap)
-[![GitHub release](https://img.shields.io/badge/release-v1.0.0-4ec9b0)](https://github.com/eugine8248/callmap/releases/latest)
+[![GitHub release](https://img.shields.io/badge/release-v1.2.0-4ec9b0)](https://github.com/eugine8248/callmap/releases/latest)
 
 ![callmap demo](packages/site/public/demo.svg)
 
@@ -53,13 +53,15 @@ Download the installer for your platform from the
 
 | Platform | File                            | Size   |
 | -------- | ------------------------------- | ------ |
-| Windows  | `callmap_1.0.0_x64-setup.exe`   | ~2 MB  |
-| Windows  | `callmap_1.0.0_x64.msi`         | ~2.6 MB |
-| macOS    | `callmap_1.0.0_universal.dmg`   | ~7 MB  |
-| Linux    | `callmap_1.0.0_amd64.AppImage`  | ~5 MB  |
+| Windows  | `callmap_1.2.0_x64-setup.exe`   | ~2.4 MB  |
+| Windows  | `callmap_1.2.0_x64_en-US.msi`   | ~3.0 MB |
+| macOS    | `callmap_1.2.0_universal.dmg`   | ~7 MB  |
+| Linux    | `callmap_1.2.0_amd64.AppImage`  | ~5 MB  |
 
-v1.0 installers are unsigned; SmartScreen / Gatekeeper will warn on first
-launch. Code-signing lands in v1.1. See [SECURITY.md](SECURITY.md).
+Installers are unsigned through v1.2; SmartScreen / Gatekeeper will
+warn on first launch. Code-signing is still pending Apple Developer +
+Windows EV certificates (see [NEEDS_APPROVAL.md](NEEDS_APPROVAL.md)).
+See [SECURITY.md](SECURITY.md).
 
 ## How it works
 
@@ -80,9 +82,14 @@ The full pipeline is in
 ## Roadmap
 
 See the [changelog page](https://eugine8248.github.io/callmap/changelog/)
-on the docs site for the full v0.1 → v1.0 history. What's next:
+on the docs site for the full v0.1 → v1.2 history. What's next:
 
-- **v1.1** — Code-signed installers (Windows EV + Apple Developer)
+- **v1.1** ✅ — Force-directed Map view (2D + 3D easter egg)
+- **v1.2** ✅ — Map view polish: curved cross-cluster edges, zoom-gated
+  particles, 3D cluster lattice, global Tab cycle, aria-live mode
+  announcements
+- **v1.3** — Code-signed installers (Windows EV + Apple Developer),
+  3D bookmark sprites, settle-entrance batched fade-in
 - **v1.x** — Rust + Java parsers, import-graph aware cross-file resolution,
   one-hop external callee fetching
 - **v2.x** — Optional AI-generated function summaries

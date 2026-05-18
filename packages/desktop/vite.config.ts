@@ -60,10 +60,20 @@ export default defineConfig({
           // v1.1.4 — 3D map chunk. three.js (+ examples), d3-force-3d,
           // react-force-graph-3d, and three-render-objects all live
           // here so they're only fetched after the `gg` easter egg.
+          //
+          // v1.2 — Split `three` into its own sub-chunk so the
+          // browser fetches it in parallel with the wrapper code on
+          // cold-cache. `three` is ~140 KB gzip on its own; isolating
+          // it lets the wrapper (`react-force-graph-3d` + d3 force
+          // helpers) finish parsing while three.js is still on the wire.
+          if (
+            id.includes("/three/") ||
+            id.includes("/three-")
+          ) {
+            return "three";
+          }
           if (
             id.endsWith("/Map3DView.tsx") ||
-            id.includes("/three/") ||
-            id.includes("/three-") ||
             id.includes("/d3-force-3d/") ||
             id.includes("/react-force-graph") ||
             id.includes("/d3-quadtree/") ||

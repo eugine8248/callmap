@@ -2,7 +2,7 @@
   "name": "callmap-vscode",
   "displayName": "callmap",
   "description": "PR-delta callgraph viewer for code reviewers — Visualize what a pull request actually changes.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "publisher": "callmap",
   "license": "MIT",
@@ -94,11 +94,11 @@
     "build:worker": "vite build --config webview-worker-vite.config.ts",
     "build": "npm run build:webview && npm run build:worker && npm run compile",
     "typecheck": "tsc -p ./tsconfig.json --noEmit && tsc -p ./webview-src/tsconfig.json --noEmit",
-    "package": "vsce package --no-yarn --no-dependencies --skip-license --out callmap-1.1.0.vsix"
+    "package": "vsce package --no-yarn --no-dependencies --skip-license --out callmap-1.2.0.vsix"
   },
   "dependencies": {
-    "@callmap/core": "1.1.0",
-    "@callmap/ui": "1.1.0",
+    "@callmap/core": "1.2.0",
+    "@callmap/ui": "1.2.0",
     "@xyflow/react": "^12.3.5",
     "highlight.js": "^11.11.1",
     "react": "^18.3.1",

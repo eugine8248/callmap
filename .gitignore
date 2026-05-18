@@ -38,3 +38,4 @@ pnpm-debug.log*
 # Astro
 packages/site/.astro/
 packages/site/src/env.d.ts
+session-snapshot.yaml

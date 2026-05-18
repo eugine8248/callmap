@@ -64,10 +64,17 @@ export default defineConfig({
           ) {
             return "MapGraphView";
           }
+          // v1.2 — Split three.js out of the Map3DView chunk so cold-
+          // cache fetch can parallelize. Same rule as the desktop
+          // config; see that file for the rationale.
+          if (
+            id.includes("/three/") ||
+            id.includes("/three-")
+          ) {
+            return "three";
+          }
           if (
             id.endsWith("/Map3DView.tsx") ||
-            id.includes("/three/") ||
-            id.includes("/three-") ||
             id.includes("/d3-force-3d/") ||
             id.includes("/react-force-graph") ||
             id.includes("/d3-quadtree/") ||

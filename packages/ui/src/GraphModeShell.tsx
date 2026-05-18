@@ -6,6 +6,13 @@
 //
 // v1.1.4 will introduce a third mode = "map3d" loaded behind a
 // dynamic import. The router shape is unchanged from this phase.
+//
+// v1.2 — Adds a visually-hidden aria-live="polite" region that
+// announces "Map view", "Review view", or "3D view loaded" on each
+// mode change so screen-reader users get an audible signal that the
+// renderer just swapped. The element is the only live region in the
+// app; MapGraphView and CallGraphView's existing live regions are
+// scoped to find-widget status text only.
 
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import type { CallGraphResult, ChangedFunction } from "@callmap/core";
@@ -71,6 +78,24 @@ export default function GraphModeShell({
     };
   }, [mode, renderMode]);
 
+  // v1.2 — aria-live announcement on mode flip. The empty-string reset
+  // tick that fires immediately before the new value is important: some
+  // screen readers de-duplicate identical strings, so writing "" first
+  // ensures a re-announce when the user toggles back to a mode they
+  // were just on (e.g. map → review → map).
+  const [liveText, setLiveText] = useState("");
+  useEffect(() => {
+    const label =
+      mode === "review"
+        ? "Review view"
+        : mode === "map"
+          ? "Map view"
+          : "3D view loaded";
+    setLiveText("");
+    const t = setTimeout(() => setLiveText(label), 50);
+    return () => clearTimeout(t);
+  }, [mode]);
+
   const Loader = (
     <div className="flex h-full items-center justify-center bg-editor text-[13px] text-text-secondary">
       <div className="flex items-center gap-2 font-mono">
@@ -87,6 +112,18 @@ export default function GraphModeShell({
 
   return (
     <div className="relative h-full w-full" style={{ overflow: "hidden" }}>
+      {/* v1.2 — Visually-hidden live region. Polite politeness so it
+          waits until the user is idle to announce. role="status" makes
+          it implicit aria-live=polite; we set both explicitly to be
+          extra-safe across screen-reader implementations. */}
+      <span
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="map-aria-live"
+      >
+        {liveText}
+      </span>
       {/* Outgoing view */}
       <div
         className="absolute inset-0"

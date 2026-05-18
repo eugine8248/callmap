@@ -27,7 +27,13 @@ import {
 } from "react";
 import type { CallGraphResult, ChangedFunction } from "@callmap/core";
 import MapNode from "./MapNode";
-import { mapNodeRadius } from "./mapConstants";
+import {
+  mapNodeRadius,
+  curveControlPoint,
+  particlesForNodeCount,
+  ZOOM_PARTICLE_OFF,
+  ZOOM_PARTICLE_ON,
+} from "./mapConstants";
 import MapEdge from "./MapEdge";
 import { useForceLayout, type ForceNodeInput, type ForceLinkInput } from "./useForceLayout";
 import { useReducedMotion } from "./useReducedMotion";
@@ -58,7 +64,6 @@ interface Props {
 // dragging each other into the same Rollup chunk. Re-exported here so
 // existing callers (the index barrel) keep working.
 export { DEFAULT_PARTICLES_PER_EDGE } from "./mapConstants";
-import { DEFAULT_PARTICLES_PER_EDGE as PARTICLES_PER_EDGE } from "./mapConstants";
 const PARTICLE_DURATION_MS = 4000;
 const PARTICLE_HOVER_DURATION_MS = 2000;
 const SETTLE_SKIP_THRESHOLD = 150;
@@ -455,7 +460,30 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
   //   Esc        → clear selection (IdeShell handles Esc globally, but
   //                we re-implement here when our container has focus so
   //                the find widget isn't the only consumer).
+  //
+  // v1.2 — When nothing is selected, Tab cycles every node in a
+  // deterministic order `(file, startLine, qualifiedName)`. This lets a
+  // keyboard-only user walk the whole graph without first having to
+  // click a node. Enter on the Tab-focused node promotes it to selected
+  // and opens the source panel.
   const lastNeighborRef = useRef<string | null>(null);
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
+  // Global deterministic order — recomputed only when the function set
+  // changes. Sort by (file ASC, startLine ASC, qualifiedName ASC).
+  const globalOrder = useMemo(() => {
+    return graph.functions
+      .slice()
+      .sort((a, b) => {
+        const af = a.file || "";
+        const bf = b.file || "";
+        if (af !== bf) return af.localeCompare(bf);
+        const al = a.startLine ?? 0;
+        const bl = b.startLine ?? 0;
+        if (al !== bl) return al - bl;
+        return (a.qualifiedName || a.name).localeCompare(b.qualifiedName || b.name);
+      })
+      .map((fn) => fn.id);
+  }, [graph.functions]);
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
@@ -501,15 +529,58 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
           centerOnNode(nextId);
           flashNode(nextId);
         }
+        return;
+      }
+
+      // v1.2 — Global Tab cycle when nothing is selected. Walk every
+      // node in (file, line, qname) order. Tab focuses; Enter promotes
+      // focus → selection.
+      if (e.key === "Tab" && selectedId === null && globalOrder.length > 0) {
+        e.preventDefault();
+        const cur = focusedNodeId;
+        let idx = cur ? globalOrder.indexOf(cur) : -1;
+        if (idx < 0) idx = e.shiftKey ? globalOrder.length - 1 : -1;
+        idx = e.shiftKey
+          ? (idx - 1 + globalOrder.length) % globalOrder.length
+          : (idx + 1) % globalOrder.length;
+        const nextId = globalOrder[idx];
+        setFocusedNodeId(nextId);
+        centerOnNode(nextId);
+        flashNode(nextId);
+        return;
+      }
+
+      // v1.2 — Enter promotes the Tab-focused node to selected, which
+      // triggers IdeShell's source-panel open via onSelect.
+      if (e.key === "Enter" && focusedNodeId && selectedId === null) {
+        const fn = graph.functions.find((f) => f.id === focusedNodeId);
+        if (fn) {
+          e.preventDefault();
+          onSelect(fn);
+          setFocusedNodeId(null);
+        }
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectedId, neighborMap, degreeMap, graph.functions, onSelect, centerOnNode, flashNode]);
+  }, [
+    selectedId,
+    focusedNodeId,
+    neighborMap,
+    degreeMap,
+    graph.functions,
+    globalOrder,
+    onSelect,
+    centerOnNode,
+    flashNode,
+  ]);
   // Reset the neighbor cursor whenever selection changes — Tab always
   // restarts from the highest-degree neighbor for a freshly-picked node.
   useEffect(() => {
     lastNeighborRef.current = null;
+    // Clearing selection should also clear the Tab-focused state so
+    // subsequent Tab starts from the top of the global order.
+    if (selectedId !== null) setFocusedNodeId(null);
   }, [selectedId]);
 
   useEffect(() => {
@@ -533,29 +604,89 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
     return m;
   }, [graph.functions]);
 
+  // v1.2 — Hysteresis state for zoom-gated particles. Particles turn
+  // OFF when scale drops below ZOOM_PARTICLE_OFF (0.5); they only turn
+  // back ON above ZOOM_PARTICLE_ON (0.55). A single boolean ref + state
+  // pair drives a re-render only on the transition, not on every wheel
+  // event.
+  const [particlesEnabledByZoom, setParticlesEnabledByZoom] = useState(true);
+  useEffect(() => {
+    if (particlesEnabledByZoom && transform.k < ZOOM_PARTICLE_OFF) {
+      setParticlesEnabledByZoom(false);
+    } else if (!particlesEnabledByZoom && transform.k > ZOOM_PARTICLE_ON) {
+      setParticlesEnabledByZoom(true);
+    }
+  }, [transform.k, particlesEnabledByZoom]);
+
+  // v1.2 — Node-id → clusterId lookup for cross-cluster edge detection.
+  // forceNodes already carries clusterId; we project it into a Map so
+  // edgeRender can do O(1) lookups instead of O(N) scans.
+  const nodeClusterMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const n of forceNodes) m.set(n.id, n.clusterId);
+    return m;
+  }, [forceNodes]);
+
+  // v1.2 — Node-id → ChangedFunction lookup. The old code re-scanned
+  // graph.functions per edge per render (O(E*F)). Hoisting to a Map
+  // keeps the edge memo at O(E).
+  const functionMap = useMemo(() => {
+    const m = new Map<string, ChangedFunction>();
+    for (const fn of graph.functions) m.set(fn.id, fn);
+    return m;
+  }, [graph.functions]);
+
   // Edge prep: precompute per-edge endpoint coords + highlight state.
   // v1.1.2 — additionally compute per-edge particle count + duration.
   // Particles drop to 0 when the user has reduced-motion preference,
   // when zoom is too small for the dots to be visible (k < 0.5), or
   // when this edge is currently faded by the click-to-isolate state.
   // Hover (either endpoint) drops the duration from 4000 → 2000ms.
+  //
+  // v1.2 — Added:
+  //  • Quadratic-Bezier control point for cross-cluster edges (M1)
+  //  • Zoom-gated particle disable with hysteresis (M2)
+  //  • Per-node-count particle ladder via particlesForNodeCount (M4)
   const edgeRender = useMemo(() => {
     const isolating = selectedId !== null;
-    const particleBase = reducedMotion ? 0 : PARTICLES_PER_EDGE;
+    const ladderParticles = particlesForNodeCount(graph.functions.length);
+    const particleBase =
+      reducedMotion || !particlesEnabledByZoom ? 0 : ladderParticles;
+    const canvasCx = size.w / 2;
+    const canvasCy = size.h / 2;
     return graph.edges.map((e, i) => {
       const sp = positions.get(e.source);
       const tp = positions.get(e.target);
       if (!sp || !tp) return null;
-      const sourceFn = graph.functions.find((f) => f.id === e.source);
-      const targetFn = graph.functions.find((f) => f.id === e.target);
+      const sourceFn = functionMap.get(e.source);
+      const targetFn = functionMap.get(e.target);
       const touchesSel = isolating && (e.source === selectedId || e.target === selectedId);
       const hoverActive = hoveredId !== null && (e.source === hoveredId || e.target === hoveredId);
+      // v1.2 — Curved when the edge crosses cluster boundaries. The
+      // sourceFn / targetFn lookup uses the forceNodes clusterId which
+      // matches v1.1's `__external__` bucket so external→internal edges
+      // also bow.
+      const sourceCluster = nodeClusterMap.get(e.source);
+      const targetCluster = nodeClusterMap.get(e.target);
+      const crossCluster =
+        !!sourceCluster && !!targetCluster && sourceCluster !== targetCluster;
+      let controlX: number | undefined;
+      let controlY: number | undefined;
+      if (crossCluster) {
+        const cp = curveControlPoint(sp.x, sp.y, tp.x, tp.y, canvasCx, canvasCy);
+        if (cp) {
+          controlX = cp.cx;
+          controlY = cp.cy;
+        }
+      }
       return {
         id: `me${i}`,
         x1: sp.x,
         y1: sp.y,
         x2: tp.x,
         y2: tp.y,
+        controlX,
+        controlY,
         sourceKind: sourceFn?.kind || "neutral",
         targetKind: targetFn?.kind || "neutral",
         external: !!e.external,
@@ -566,7 +697,19 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
         particleDurationMs: hoverActive ? PARTICLE_HOVER_DURATION_MS : PARTICLE_DURATION_MS,
       };
     });
-  }, [graph.edges, graph.functions, positions, selectedId, hoveredId, reducedMotion]);
+  }, [
+    graph.edges,
+    graph.functions.length,
+    functionMap,
+    nodeClusterMap,
+    positions,
+    selectedId,
+    hoveredId,
+    reducedMotion,
+    particlesEnabledByZoom,
+    size.w,
+    size.h,
+  ]);
 
   // Click-to-isolate dim flag per node.
   const focusSet = useMemo(() => {
@@ -646,7 +789,7 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
             const dim = focusSet ? !focusSet.has(fn.id) : false;
             const flashing = fn.id === flashingId;
             const labelOp =
-              hoveredId === fn.id || sel
+              hoveredId === fn.id || sel || fn.id === focusedNodeId
                 ? 1
                 : flashing
                   ? 1
@@ -659,6 +802,7 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
                 y={p.y}
                 degree={deg}
                 selected={sel}
+                focused={fn.id === focusedNodeId}
                 bookmarked={bookmarkedIds?.has(fn.id) === true}
                 dimmed={dim}
                 reducedMotion={reducedMotion}

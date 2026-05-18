@@ -3,8 +3,11 @@
 // we already give the path a stable `id` so the <animateMotion> can
 // attach via mpath.
 //
-// We intentionally render edges as straight lines for v1.1.0. Curving
-// them via a quadratic control point would obscure cluster hulls.
+// v1.2 — Cross-cluster edges now render as a quadratic Bezier. The
+// caller (MapGraphView) supplies a precomputed control point; we keep
+// the geometry math in mapConstants so MapEdge stays render-only.
+// Because <animateMotion mpath> follows the path attribute verbatim,
+// particles automatically ride the curve with no extra code.
 
 import { memo } from "react";
 import { mapNodeColorVar } from "./mapConstants";
@@ -36,6 +39,17 @@ interface Props {
    * `animation-duration` updating mid-animation.
    */
   particleDurationMs: number;
+  /**
+   * v1.2 — Quadratic-Bezier control point for cross-cluster edges.
+   * When both `controlX` and `controlY` are finite numbers the path
+   * is rendered as `M x1,y1 Q controlX,controlY x2,y2`. Otherwise the
+   * path is the straight line used in v1.1.
+   *
+   * The `<animateMotion mpath>` element references the same path id so
+   * particles automatically follow the curve.
+   */
+  controlX?: number;
+  controlY?: number;
 }
 
 function MapEdgeImpl({
@@ -52,6 +66,8 @@ function MapEdgeImpl({
   faded,
   particles,
   particleDurationMs,
+  controlX,
+  controlY,
 }: Props) {
   const sourceColor = `var(${mapNodeColorVar(sourceKind)})`;
   const targetColor = `var(${mapNodeColorVar(targetKind)})`;
@@ -67,6 +83,16 @@ function MapEdgeImpl({
   else if (external && ambient) opacity = 0.18;
   const stroke = highlighted ? "var(--accent)" : `url(#${gradientId})`;
   const strokeWidth = highlighted ? 1.5 : 0.9;
+
+  // v1.2 — curved when caller supplied a control point.
+  const curved =
+    typeof controlX === "number" &&
+    typeof controlY === "number" &&
+    Number.isFinite(controlX) &&
+    Number.isFinite(controlY);
+  const d = curved
+    ? `M${x1},${y1} Q${controlX},${controlY} ${x2},${y2}`
+    : `M${x1},${y1} L${x2},${y2}`;
 
   return (
     <g
@@ -90,7 +116,7 @@ function MapEdgeImpl({
       </defs>
       <path
         id={id}
-        d={`M${x1},${y1} L${x2},${y2}`}
+        d={d}
         stroke={stroke}
         strokeWidth={strokeWidth}
         strokeDasharray={external && !highlighted ? "3 3" : undefined}
@@ -103,7 +129,10 @@ function MapEdgeImpl({
           staggered so the particles are evenly distributed along the
           path. Faded edges drop their particles entirely so the screen
           isn't a soup of dots when the user has a selection.
-          dx = (duration / N), so for N=3 + 4000ms we begin at 0s, 1.33s, 2.67s. */}
+          dx = (duration / N), so for N=3 + 4000ms we begin at 0s, 1.33s, 2.67s.
+
+          v1.2 — When the path is curved, <animateMotion mpath> follows
+          the Bezier automatically; no extra code needed here. */}
       {!faded && particles > 0 && (
         <>
           {Array.from({ length: particles }, (_, i) => {

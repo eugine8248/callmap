@@ -66,7 +66,15 @@ export type CommandId =
   // v1.1 — Map view
   | "viewMode.toggle"
   | "viewMode.review"
-  | "viewMode.map";
+  | "viewMode.map"
+  // v1.2 — Map keyboard navigation. Tab cycles every node when nothing
+  // is selected (deterministic file/line/qname order). Enter promotes a
+  // Tab-focused node to selected and opens the source panel. We don't
+  // bind these as command IDs because the handler lives inside
+  // MapGraphView at the window level; the IDs are here only so the
+  // command palette and help-text can list them.
+  | "map.cycleNode"
+  | "map.openFocusedSource";
 
 export const KEYMAP: Record<CommandId, Shortcut | undefined> = {
   "palette.open": { key: "p", mods: ["Ctrl", "Shift"] },
@@ -94,4 +102,11 @@ export const KEYMAP: Record<CommandId, Shortcut | undefined> = {
   "viewMode.toggle": { key: "g", mods: ["Ctrl", "Shift"] },
   "viewMode.review": undefined,
   "viewMode.map": undefined,
+  // v1.2 — Tab + Enter are the global Map nav keys. We list them as
+  // undefined-shortcut commands because their actual binding is a
+  // window-level keydown handler in MapGraphView, not a palette
+  // dispatch. Listing them surfaces them in /help and the command
+  // palette's "all bindings" view.
+  "map.cycleNode": { key: "Tab" },
+  "map.openFocusedSource": { key: "Enter" },
 };

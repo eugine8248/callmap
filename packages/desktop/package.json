@@ -1,6 +1,6 @@
 {
   "name": "@callmap/desktop",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "callmap Tauri desktop app — thin React shell over @callmap/ui with Tauri-backed host bindings.",
@@ -15,8 +15,8 @@
     "tauri:build": "tauri build"
   },
   "dependencies": {
-    "@callmap/core": "1.1.0",
-    "@callmap/ui": "1.1.0",
+    "@callmap/core": "1.2.0",
+    "@callmap/ui": "1.2.0",
     "@tauri-apps/api": "^2.1.1",
     "@tauri-apps/plugin-shell": "^2.0.1",
     "@xyflow/react": "^12.3.5",

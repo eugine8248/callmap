@@ -26,6 +26,12 @@ interface Props {
   y: number;
   degree: number;
   selected: boolean;
+  /**
+   * v1.2 — Tab-focused but not yet selected. Rendered with a 50%-opacity
+   * dashed `--accent` ring so the user can tell the focus moved without
+   * confusing it with the solid selection ring.
+   */
+  focused?: boolean;
   bookmarked: boolean;
   /** Non-neighbor when something else is selected. */
   dimmed: boolean;
@@ -51,6 +57,7 @@ function MapNodeImpl({
   y,
   degree,
   selected,
+  focused = false,
   bookmarked,
   dimmed,
   reducedMotion,
@@ -114,6 +121,21 @@ function MapNodeImpl({
           stroke="var(--accent)"
           strokeWidth={2}
           className="map-node__ring"
+        />
+      )}
+      {/* v1.2 — Focus ring (Tab-focused, not yet selected). Dashed +
+          half-opacity so the user can distinguish from the selection
+          state. Only renders when `focused && !selected`. */}
+      {focused && !selected && (
+        <circle
+          r={r + 4}
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth={2}
+          strokeDasharray="2 2"
+          opacity={0.5}
+          className="map-node__focus-ring"
+          pointerEvents="none"
         />
       )}
       {/* Hover halo — pre-rendered, opacity 0 by default, CSS bumps on :hover */}
