@@ -52,8 +52,13 @@ interface Props {
   reducedMotion?: boolean;
 }
 
-const DEFAULT_PARTICLES_PER_EDGE = 3; // v1.1.2 — exported for consistency
-export { DEFAULT_PARTICLES_PER_EDGE };
+// v1.1.2 — Hardcoded default for the per-edge particle count. Bumping
+// this everywhere in callmap is a single-source-of-truth edit. We
+// re-export so the desktop README and the V11_REPORT can reference it.
+export const DEFAULT_PARTICLES_PER_EDGE = 3;
+const PARTICLE_DURATION_MS = 4000;
+const PARTICLE_HOVER_DURATION_MS = 2000;
+const SETTLE_SKIP_THRESHOLD = 150;
 
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 3;
@@ -461,8 +466,14 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
   }, [graph.functions]);
 
   // Edge prep: precompute per-edge endpoint coords + highlight state.
+  // v1.1.2 — additionally compute per-edge particle count + duration.
+  // Particles drop to 0 when the user has reduced-motion preference,
+  // when zoom is too small for the dots to be visible (k < 0.5), or
+  // when this edge is currently faded by the click-to-isolate state.
+  // Hover (either endpoint) drops the duration from 4000 → 2000ms.
   const edgeRender = useMemo(() => {
     const isolating = selectedId !== null;
+    const particleBase = reducedMotion ? 0 : DEFAULT_PARTICLES_PER_EDGE;
     return graph.edges.map((e, i) => {
       const sp = positions.get(e.source);
       const tp = positions.get(e.target);
@@ -470,6 +481,7 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
       const sourceFn = graph.functions.find((f) => f.id === e.source);
       const targetFn = graph.functions.find((f) => f.id === e.target);
       const touchesSel = isolating && (e.source === selectedId || e.target === selectedId);
+      const hoverActive = hoveredId !== null && (e.source === hoveredId || e.target === hoveredId);
       return {
         id: `me${i}`,
         x1: sp.x,
@@ -482,9 +494,11 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
         highlighted: touchesSel,
         ambient: !isolating,
         faded: isolating && !touchesSel,
+        particles: particleBase,
+        particleDurationMs: hoverActive ? PARTICLE_HOVER_DURATION_MS : PARTICLE_DURATION_MS,
       };
     });
-  }, [graph.edges, graph.functions, positions, selectedId]);
+  }, [graph.edges, graph.functions, positions, selectedId, hoveredId, reducedMotion]);
 
   // Click-to-isolate dim flag per node.
   const focusSet = useMemo(() => {
@@ -580,7 +594,10 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
                 bookmarked={bookmarkedIds?.has(fn.id) === true}
                 dimmed={dim}
                 reducedMotion={reducedMotion}
-                animateSettle={!reducedMotion}
+                animateSettle={
+                  !reducedMotion &&
+                  graph.functions.length < SETTLE_SKIP_THRESHOLD
+                }
                 breathingDelay={breathingDelays.get(fn.id) || 0}
                 onClick={onNodeClick(fn)}
                 onContextMenu={onContextMenu ? onNodeContext(fn) : undefined}
