@@ -444,6 +444,71 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
 
   useImperativeHandle(ref, () => ({ centerOnNode, flashNode }), [centerOnNode, flashNode]);
 
+  // v1.1.3 — Keyboard navigation. With a node selected:
+  //   Tab        → next-by-degree neighbor
+  //   Shift+Tab  → previous-by-degree neighbor
+  //   Enter      → already opens source panel via onSelect — we re-fire
+  //                so the host re-centers on the current selection.
+  //   Esc        → clear selection (IdeShell handles Esc globally, but
+  //                we re-implement here when our container has focus so
+  //                the find widget isn't the only consumer).
+  const lastNeighborRef = useRef<string | null>(null);
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      // Don't fight with text inputs.
+      if (
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.closest("[data-find-widget]") ||
+        target?.closest("[data-palette]")
+      ) {
+        return;
+      }
+      // Only react when our container is in focus / the user has the
+      // map open. The `data-map-graph` selector keeps us out of the
+      // Review-mode key handling.
+      const inMap = !!containerRef.current && containerRef.current.contains(target as Node);
+      if (!inMap && document.activeElement !== document.body) return;
+
+      if (e.key === "Tab" && selectedId !== null) {
+        e.preventDefault();
+        const nbrs = neighborMap.get(selectedId);
+        if (!nbrs || nbrs.size === 0) return;
+        const ordered = Array.from(nbrs).sort((a, b) => {
+          const da = degreeMap.get(a) || 0;
+          const db = degreeMap.get(b) || 0;
+          // Higher degree first; stable tiebreak by id so the cycle is
+          // deterministic across renders.
+          return db - da || a.localeCompare(b);
+        });
+        const fns = graph.functions;
+        // The "previously focused" index is tracked on the ref so
+        // Shift+Tab walks the list backwards from the same anchor.
+        let idx = ordered.indexOf(lastNeighborRef.current || "");
+        if (idx < 0) idx = e.shiftKey ? ordered.length - 1 : -1;
+        idx = e.shiftKey
+          ? (idx - 1 + ordered.length) % ordered.length
+          : (idx + 1) % ordered.length;
+        const nextId = ordered[idx];
+        lastNeighborRef.current = nextId;
+        const fn = fns.find((f) => f.id === nextId);
+        if (fn) {
+          onSelect(fn);
+          centerOnNode(nextId);
+          flashNode(nextId);
+        }
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedId, neighborMap, degreeMap, graph.functions, onSelect, centerOnNode, flashNode]);
+  // Reset the neighbor cursor whenever selection changes — Tab always
+  // restarts from the highest-degree neighbor for a freshly-picked node.
+  useEffect(() => {
+    lastNeighborRef.current = null;
+  }, [selectedId]);
+
   useEffect(() => {
     return () => {
       if (flashTimer.current) clearTimeout(flashTimer.current);

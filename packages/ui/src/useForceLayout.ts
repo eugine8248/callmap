@@ -35,6 +35,11 @@ import {
   type SimulationLinkDatum,
 } from "d3-force";
 
+// v1.1.3 — Threshold above which the force simulation moves off the
+// main thread into a Web Worker. Below this we keep the simpler inline
+// path so small graphs don't pay the worker spin-up tax (~20ms).
+const WORKER_NODE_THRESHOLD = 100;
+
 export interface ForceNodeInput {
   id: string;
   clusterId: string;
@@ -162,6 +167,87 @@ export function useForceLayout(
       // positions so the consumer renders nothing rather than stale data.
       setTick((t) => t + 1);
       return;
+    }
+
+    // ── v1.1.3 — Worker path for large graphs ─────────────────────
+    // We try to spawn a module Worker via Vite's `new URL` form. If
+    // that throws (CSP, or running under a host that doesn't allow
+    // module workers — e.g. older VS Code webviews) we silently fall
+    // back to the inline simulation path below.
+    if (nodes.length >= WORKER_NODE_THRESHOLD) {
+      let worker: Worker | null = null;
+      try {
+        worker = new Worker(
+          new URL("./forceLayout.worker.ts", import.meta.url),
+          { type: "module" },
+        );
+      } catch (err) {
+        // Fall through to the inline path.
+        console.warn("[callmap] force-layout worker init failed, running inline:", err);
+        worker = null;
+      }
+      if (worker) {
+        const w = worker;
+        const clusterNodes = new Map<string, string[]>();
+        for (const n of nodes) {
+          if (!clusterNodes.has(n.clusterId)) clusterNodes.set(n.clusterId, []);
+          clusterNodes.get(n.clusterId)!.push(n.id);
+        }
+        w.onmessage = (e: MessageEvent) => {
+          const data = e.data as {
+            type: "tick" | "settled";
+            positions: Array<{ id: string; x: number; y: number }>;
+          };
+          const map = new Map<string, NodePos>();
+          for (const p of data.positions) map.set(p.id, p);
+          // Recompute cluster centroids in the main thread — cheap
+          // (O(nodes)) compared to the full simulation.
+          const clusters = new Map<string, ClusterInfo>();
+          for (const [cid, ids] of clusterNodes) {
+            let sx = 0;
+            let sy = 0;
+            let count = 0;
+            for (const nid of ids) {
+              const p = map.get(nid);
+              if (!p) continue;
+              sx += p.x;
+              sy += p.y;
+              count++;
+            }
+            if (count === 0) continue;
+            clusters.set(cid, {
+              id: cid,
+              cx: sx / count,
+              cy: sy / count,
+              nodeIds: ids,
+            });
+          }
+          positionsRef.current = map;
+          clustersRef.current = clusters;
+          setTick((t) => t + 1);
+          if (data.type === "settled") setSettled(true);
+        };
+        w.postMessage({
+          type: "init",
+          nodes: nodes.map((n) => ({
+            id: n.id,
+            clusterId: n.clusterId,
+            radius: n.radius,
+          })),
+          links: links.map((l) => ({ source: l.source, target: l.target })),
+          width,
+          height,
+        });
+        return () => {
+          try {
+            w.postMessage({ type: "stop" });
+          } catch {
+            /* worker already terminated */
+          }
+          w.terminate();
+        };
+      }
+      // worker = null path: fall through to inline.
     }
 
     const clusterIds = Array.from(new Set(nodes.map((n) => n.clusterId)));

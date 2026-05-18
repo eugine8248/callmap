@@ -69,7 +69,12 @@ function MapEdgeImpl({
   const strokeWidth = highlighted ? 1.5 : 0.9;
 
   return (
-    <g className="map-edge" style={{ transition: "opacity 200ms ease-out" }}>
+    <g
+      className="map-edge"
+      role="presentation"
+      aria-hidden="true"
+      style={{ transition: "opacity 200ms ease-out" }}
+    >
       <defs>
         <linearGradient
           id={gradientId}
