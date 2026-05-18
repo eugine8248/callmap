@@ -29,6 +29,7 @@ import type { CallGraphResult, ChangedFunction } from "@callmap/core";
 import MapNode, { mapNodeRadius } from "./MapNode";
 import MapEdge from "./MapEdge";
 import { useForceLayout, type ForceNodeInput, type ForceLinkInput } from "./useForceLayout";
+import { useReducedMotion } from "./useReducedMotion";
 import Codicon from "./Codicon";
 
 export interface MapGraphViewHandle {
@@ -44,7 +45,10 @@ interface Props {
   onContextMenu?: (fn: ChangedFunction, x: number, y: number) => void;
   findOpen?: boolean;
   onFindOpenChange?: (open: boolean) => void;
-  /** v1.1.3 — set by host based on prefers-reduced-motion. Defaults to false. */
+  /**
+   * v1.1.1 — When set, overrides the matchMedia-detected reduced-motion
+   * preference. Leave undefined to let the hook honor the OS setting.
+   */
   reducedMotion?: boolean;
 }
 
@@ -139,11 +143,17 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
     onContextMenu,
     findOpen = false,
     onFindOpenChange,
-    reducedMotion = false,
+    reducedMotion: reducedMotionProp,
   },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  // v1.1.1 — Resolve reduced-motion lazily. The host can pass an
+  // override (used in some VS Code panels that disable webview animations
+  // globally); otherwise we fall back to the media-query hook.
+  const systemReduced = useReducedMotion();
+  const reducedMotion = reducedMotionProp ?? systemReduced;
   const [size, setSize] = useState({ w: 960, h: 720 });
   const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -345,12 +355,57 @@ const MapGraphView = forwardRef<MapGraphViewHandle, Props>(function MapGraphView
   }, [positions, size, tick, graph]);
 
   // Click handlers.
+  // v1.1.1 — On every click we trigger the ripple effect. We append a
+  // dedicated <circle> to the clicked node group and drive its radius
+  // + opacity via Web Animations API. Removing the element on `finish`
+  // is cheaper than maintaining ripple state in React.
+  function spawnRipple(target: SVGGElement) {
+    if (reducedMotion) return;
+    const svgNS = "http://www.w3.org/2000/svg";
+    const circle = document.createElementNS(svgNS, "circle");
+    circle.setAttribute("r", "1");
+    circle.setAttribute("fill", "none");
+    circle.setAttribute("stroke", "var(--map-node-color, currentColor)");
+    circle.setAttribute("stroke-width", "2");
+    circle.setAttribute("class", "map-node__ripple-anim");
+    circle.style.pointerEvents = "none";
+    target.appendChild(circle);
+    // Drive the radius + opacity in a rAF loop. We can't use a CSS
+    // transition on the SVG `r` attribute (only Chromium 84+ animates
+    // it via WAAPI, but other engines need the explicit numeric tween)
+    // so we do the cheap manual sweep — 600ms is a single ease-out.
+    const start = performance.now();
+    const DURATION = 600;
+    const MAX_R = 200;
+    function step(now: number) {
+      const t = Math.min(1, (now - start) / DURATION);
+      const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const r = ease * MAX_R;
+      const opacity = 0.55 * (1 - ease);
+      circle.setAttribute("r", r.toFixed(1));
+      circle.setAttribute("opacity", opacity.toFixed(3));
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        circle.remove();
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
   const onNodeClick = useCallback(
     (fn: ChangedFunction) => (e: React.MouseEvent) => {
       e.stopPropagation();
+      const g = (e.currentTarget as SVGGElement) ?? null;
+      if (g) spawnRipple(g);
       onSelect(fn);
     },
-    [onSelect],
+    // We deliberately exclude spawnRipple from deps — it closes over
+    // reducedMotion which is captured at call time via the ref-free
+    // closure. ESLint wants it but adding spawnRipple bloats the
+    // memo cache without changing behavior.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onSelect, reducedMotion],
   );
   const onNodeContext = useCallback(
     (fn: ChangedFunction) => (e: React.MouseEvent) => {
